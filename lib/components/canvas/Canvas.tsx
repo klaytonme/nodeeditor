@@ -6,6 +6,7 @@ import { useUIStore } from '@/lib/stores/uiStore';
 import { usePortPositions } from '@/lib/hooks/usePortPositions';
 import { Node } from '@/lib/components/nodes/Node';
 import { EdgeLayer } from '@/lib/components/edges/EdgeLayer';
+import { dispatch } from '@/lib/sync/dispatch';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Canvas — the main editing surface.
@@ -33,6 +34,35 @@ export const Canvas: React.FC = () => {
   useEffect(() => {
     updateAll();
   });
+
+  const canvasFocused = useRef(false);
+ 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!wrapRef.current?.contains(document.activeElement)) return;
+      // Don't fire if the user is typing in an input/textarea
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+ 
+      const { selected, clearSelected, endPortConnect } = useUIStore.getState();
+ 
+      if (e.key === 'Escape') {
+        clearSelected();
+        endPortConnect();
+      }
+ 
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (!selected) return;
+        if (selected.kind === 'node') dispatch.removeNode(selected.id);
+        if (selected.kind === 'edge') dispatch.removeEdge(selected.id);
+        clearSelected();
+      }
+    };
+ 
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
 
   // Track mouse for the in-progress edge
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -70,6 +100,10 @@ export const Canvas: React.FC = () => {
   return (
     <div
       ref={wrapRef}
+  tabIndex={-1}          // makes it focusable without appearing in tab order
+  onMouseDown={() => wrapRef.current?.focus()}  // grab focus on any click inside
+  onFocus={() => { canvasFocused.current = true; }}
+  onBlur={() => { canvasFocused.current = false; }}
 	  className="h-full w-full"
       style={{
         flex: 1,
