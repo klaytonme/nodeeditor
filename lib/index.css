@@ -1,0 +1,57 @@
+/* Global reset & design tokens */
+
+@import "tailwindcss";
+
+:root {
+  --bg:           #0e0f11;
+  --surface:      #16181c;
+  --surface2:     #1e2026;
+  --border:       rgba(255, 255, 255, 0.07);
+  --border2:      rgba(255, 255, 255, 0.14);
+  --text:         #e8e9eb;
+  --text-muted:   #6b7280;
+  --text-dim:     #9ca3af;
+
+  --accent:       #3b82f6;
+  --accent-dim:   rgba(59, 130, 246, 0.15);
+  --accent-glow:  rgba(59, 130, 246, 0.3);
+
+  --green:        #22c55e;
+  --green-dim:    rgba(34, 197, 94, 0.15);
+  --amber:        #f59e0b;
+  --amber-dim:    rgba(245, 158, 11, 0.12);
+  --red:          #ef4444;
+  --red-dim:      rgba(239, 68, 68, 0.12);
+  --purple:       #a78bfa;
+  --purple-dim:   rgba(167, 139, 250, 0.12);
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+
+body {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin monochrome scrollbar */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Utility: hide but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
