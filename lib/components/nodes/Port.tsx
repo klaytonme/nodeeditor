@@ -4,6 +4,7 @@ import React, { useCallback } from 'react';
 import { useUIStore } from '@/lib/stores/uiStore';
 import { DATA_TYPE_COLOR, PORT_SIZE } from '@/lib/constants';
 import type { DataType, PortPosition } from '@/lib/types';
+import { dispatch } from '@/lib/sync/dispatch';
 
 interface PortProps {
   nodeId: string;
@@ -47,11 +48,76 @@ export const Port: React.FC<PortProps> = ({
   updatePortPositions,
 }) => {
   const color = DATA_TYPE_COLOR[dataType] ?? DATA_TYPE_COLOR.unknown;
+  const portConnect = useUIStore((s) => s.portConnect);
 
   // Shape logic
   const isEncrypted = dataType === 'encrypted';
   const borderRadius = isEncrypted ? 0 : isArray ? 2 : '50%';
   const transform = isArray && !isEncrypted ? 'rotate(45deg)' : undefined;
+
+
+  const isInput = side === 'input';
+
+  const isPendingSource =
+    portConnect?.srcNodeId === nodeId && portConnect?.srcPort === portName;
+
+	  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (side !== 'output') return;
+      e.stopPropagation();
+      e.preventDefault();
+      updatePortPositions();
+      const pos = getPortPos(nodeId, 'output', portName);
+      useUIStore.getState().startPortConnect(nodeId, portName, pos ?? { x: 0, y: 0 });
+    },
+    [nodeId, portName, side, getPortPos, updatePortPositions]
+  );
+ 
+  const handleMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      if (side !== 'input') return;
+      const { portConnect: portDrag, endPortConnect: endPortDrag } = useUIStore.getState();
+      if (!portDrag) return;
+      e.stopPropagation();
+      if (portDrag.srcNodeId !== nodeId) {
+        dispatch.addEdge(portDrag.srcNodeId, portDrag.srcPort, nodeId, portName);
+      }
+      endPortDrag();
+      onDragMove?.();
+    },
+    [nodeId, portName, side, onDragMove]
+  );
+ 
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const { portConnect, startPortConnect, endPortConnect } = useUIStore.getState();
+ 
+      if (!isInput) {
+        // If already pending from this port, cancel it
+        if (portConnect) {
+          endPortConnect();
+        } else {
+          // Start a new pending click-to-connect
+      const pos = getPortPos(nodeId, 'output', portName);
+          startPortConnect(nodeId, portName, pos ?? { x: 0, y: 0 });
+		  console.log("started");
+        }
+        return;
+      }
+ 
+      else if (portConnect) {
+        // Complete the connection
+        if (portConnect.srcNodeId !== nodeId) {
+          dispatch.addEdge(portConnect.srcNodeId, portConnect.srcPort, nodeId, portName);
+        }
+        endPortConnect();
+        onDragMove?.();
+      }
+    },
+    [nodeId, portName, side, onDragMove]
+  );
+
 
   const indicatorStyle: React.CSSProperties = {
     width: PORT_SIZE,
@@ -67,37 +133,6 @@ export const Port: React.FC<PortProps> = ({
     zIndex: 10,
   };
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (side !== 'output') return;
-      e.stopPropagation();
-      e.preventDefault();
-	
-	  updatePortPositions();
-      const pos = getPortPos(nodeId, 'output', portName);
-  useUIStore.getState().startPortDrag(nodeId, portName, pos ?? { x: e.clientX, y: e.clientY });
-    },
-    [nodeId, portName, side]
-  );
-
-  const handleMouseUp = useCallback(
-    (e: React.MouseEvent) => {
-      if (side !== 'input') return;
-      const { portDrag, endPortDrag } = useUIStore.getState();
-      if (!portDrag) return;
-      e.stopPropagation();
-      if (portDrag.srcNodeId !== nodeId) {
-        // Resolved in Canvas / EdgeLayer via the store — just end the drag here
-        const { addEdgeFromDrag } = useUIStore.getState() as any;
-        addEdgeFromDrag?.(nodeId, portName);
-      }
-      endPortDrag();
-      onDragMove?.();
-    },
-    [nodeId, portName, side, onDragMove]
-  );
-
-  const isInput = side === 'input';
 
   return (
     <div
@@ -113,13 +148,14 @@ export const Port: React.FC<PortProps> = ({
         data-isarray={String(isArray)}
         style={{
           ...indicatorStyle,
-          ...(isConnected ? { boxShadow: `0 0 0 2px ${color}44` } : {}),
+          ...(isConnected ? {} : { boxShadow: `0 0 0 2px ${color}44` }),
 		  position: "absolute",
 		  right: isInput ? '' : -PORT_SIZE/2+'px',
 		  left: isInput ? -PORT_SIZE/2+'px' : '',
         }}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
+		onClick={handleClick}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLElement).style.boxShadow = '0 0 5px 2px #48abe0';
         }}

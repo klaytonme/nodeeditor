@@ -24,11 +24,11 @@ interface NodeProps {
 //   ┌─────────────────────────┐
 //   │  [coloured title bar]   │  ← draggable header
 //   ├─────────────────────────┤
-//   ● url          value      │  ← input rows (port left, label, type badge)
-//   ● trigger      value      │
+//   ● input field    value    │  ← input rows (port left, label, type badge)
+//   ● input field    value    │
 //   ├─────────────────────────┤
-//   │ data         value      ●  ← output rows (label, type badge, port right)
-//   │ status       value      ●
+//   │ output field   value    ●  ← output rows (label, type badge, port right)
+//   │ output field   value    ●
 //   └─────────────────────────┘
 //
 // Ports sit at the very edge of each row and are registered with usePortPositions

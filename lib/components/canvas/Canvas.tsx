@@ -24,7 +24,8 @@ export const Canvas: React.FC = () => {
   const edges = useGraphStore((s) => s.edges);
   const positions = useUIStore((s) => s.positions);
   const selected = useUIStore((s) => s.selected);
-  const portDrag = useUIStore((s) => s.portDrag);
+  const portDrag = useUIStore((s) => s.portConnect);
+  const portConnect = useUIStore((s) => s.portConnect);
 
   const { registerPort, updateAll, getPortPos } = usePortPositions(wrapRef);
 
@@ -35,9 +36,9 @@ export const Canvas: React.FC = () => {
 
   // Track mouse for the in-progress edge
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!portDrag) return;
+    if (!portDrag && !portConnect) return;
     const rect = wrapRef.current!.getBoundingClientRect();
-    useUIStore.getState().updatePortDrag({
+    useUIStore.getState().updatePortConnect({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     });
@@ -46,13 +47,14 @@ export const Canvas: React.FC = () => {
 
   // Cancel port drag on mouse up anywhere on canvas
   const handleMouseUp = useCallback(() => {
-    if (portDrag) useUIStore.getState().endPortDrag();
+    if (portDrag) useUIStore.getState().endPortConnect();
   }, [portDrag]);
 
   // Clear selection on background click
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     if (e.target === wrapRef.current) {
       useUIStore.getState().clearSelected();
+	  useUIStore.getState().endPortConnect();
     }
   }, []);
 
@@ -75,7 +77,7 @@ export const Canvas: React.FC = () => {
         overflow: 'hidden',
         backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
         backgroundSize: '24px 24px',
-        cursor: portDrag ? 'crosshair' : 'default',
+        cursor: (portDrag || portConnect) ? 'crosshair' : 'default',
       }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

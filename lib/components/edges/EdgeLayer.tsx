@@ -24,7 +24,7 @@ interface EdgeLayerProps {
 export const EdgeLayer: React.FC<EdgeLayerProps> = ({ getPortPos }) => {
   const edges = useGraphStore((s) => s.edges);
   const selected = useUIStore((s) => s.selected);
-  const portDrag = useUIStore((s) => s.portDrag);
+  const portDrag = useUIStore((s) => s.portConnect);
   const isRunning = useUIStore((s) => s.isRunning);
 
   const handleEdgeClick = (edgeId: string) => {
