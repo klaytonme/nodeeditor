@@ -10,14 +10,16 @@ export type DataType = 'str' | 'int' | 'float' | 'date' | 'obj' | 'bool' | 'puls
 export interface PortDef {
 	name: string;       // unique within the node
 	label: string;      // display label
-	dataType: DataType;
+	type: DataType;
 	isArray: boolean;   // array = rotated square, scalar = circle
+	defaultValue?: string;
 }
 
 export interface NodeDef {
 	id: string;
 	type: NodeType;
 	label: string;
+	inputValues: Record<string, string>;
 	config: Record<string, string>;
 	inputs: PortDef[];
 	outputs: PortDef[];
@@ -69,6 +71,7 @@ export type GraphOp =
 	| { type: 'ADD_NODE'; node: NodeDef }
 	| { type: 'REMOVE_NODE'; id: string }
 	| { type: 'UPDATE_CONFIG'; id: string; patch: Partial<Record<string, string>> }
+	| { type: 'UPDATE_INPUT'; id: string; port: string; value: string }
 	| { type: 'ADD_EDGE'; edge: EdgeDef }
 	| { type: 'REMOVE_EDGE'; id: string };
 

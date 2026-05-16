@@ -1,239 +1,361 @@
-'use client';
+"use client";
 
-import React, { useCallback } from 'react';
-import { useGraphStore } from '@/lib/stores/graphStore';
-import { useUIStore } from '@/lib/stores/uiStore';
-import { dispatch } from '@/lib/sync/dispatch';
-import { NODE_TYPE_COLOR, DATA_TYPE_COLOR } from '@/lib/constants';
-import type { DataType } from '@/lib/types';
+import React, { useCallback, useState } from "react";
+import { useGraphStore } from "@/lib/stores/graphStore";
+import { useUIStore } from "@/lib/stores/uiStore";
+import { dispatch } from "@/lib/sync/dispatch";
+import { NODE_TYPE_HEADER_COLOR, DATA_TYPE_COLOR } from "@/lib/constants";
+import type { DataType, NodeDef, PortDef } from "@/lib/types";
 
-const DATA_TYPES: { type: DataType; label: string; shape: 'circle' | 'diamond' | 'square' }[] = [
-  { type: 'str',       label: 'string',    shape: 'circle'  },
-  { type: 'int',       label: 'integer',   shape: 'circle'  },
-  { type: 'float',     label: 'float',     shape: 'circle'  },
-  { type: 'date',      label: 'date',      shape: 'circle'  },
-  { type: 'obj',       label: 'object',    shape: 'circle'  },
-  { type: 'bool',      label: 'boolean',   shape: 'circle'  },
-  { type: 'pulse',     label: 'pulse',     shape: 'circle'  },
-  { type: 'encrypted', label: 'encrypted', shape: 'square'  },
-];
+// ─────────────────────────────────────────────────────────────────────────────
+// Inspector — typed input controls per port dataType.
+// If a port is connected via an edge, its hardcoded value is shown as overridden.
+// ─────────────────────────────────────────────────────────────────────────────
 
-function PortLegend() {
-  return (
-    <div style={{ marginTop: 16 }}>
-      <div style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-        port types
-      </div>
-      {DATA_TYPES.map(({ type, label, shape }) => {
-        const color = DATA_TYPE_COLOR[type];
-        const isSquare = shape === 'square';
-        return (
-          <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-            <div style={{
-              width: 9, height: 9, flexShrink: 0,
-              background: color,
-              borderRadius: isSquare ? 1 : '50%',
-              border: '1px solid rgba(0,0,0,0.4)',
-            }} />
-            <span style={{ fontSize: 11, color: 'var(--text-dim)', flex: 1 }}>{label}</span>
-            <span style={{ fontSize: 9, color, fontWeight: 700, letterSpacing: '0.04em' }}>{type}</span>
-          </div>
-        );
-      })}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
-        <div style={{ width: 9, height: 9, background: 'var(--text-muted)', transform: 'rotate(45deg)', borderRadius: 1, flexShrink: 0 }} />
-        <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>array (any type)</span>
-      </div>
-    </div>
-  );
+// ── Typed input controls ────────────────────────────────────────────────────
+
+interface PortInputProps {
+	port: PortDef;
+	value: string;
+	isOverridden: boolean;
+	onChange: (value: string) => void;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Inspector — right panel that shows config for the selected node or edge.
-//
-// Config edits are sent through dispatch.updateConfig() so they go through
-// the full optimistic-update + ACK/rollback pipeline.
-// ─────────────────────────────────────────────────────────────────────────────
+const PortInput: React.FC<PortInputProps> = ({ port, value, isOverridden, onChange }) => {
+	const baseInput =
+		"w-full bg-white/5 border border-white/10 rounded text-[11px] text-white/80 outline-none font-mono px-2 py-1 transition-colors focus:border-blue-500/60";
+	const overrideClass = "opacity-40 pointer-events-none select-none";
 
-const labelStyle: React.CSSProperties = {
-  fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase',
-  color: 'var(--text-muted)', marginBottom: 5,
+	if (isOverridden) {
+		return <div className={`${baseInput} ${overrideClass} italic text-white/30`}>external input</div>;
+	}
+
+	switch (port.type) {
+		case "bool":
+			return (
+				<button
+					onClick={() => onChange(value === "true" ? "false" : "true")}
+					className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${value === "true" ? "bg-blue-500" : "bg-white/10"}`}>
+					<span
+						className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${value === "true" ? "translate-x-4" : "translate-x-1"}`}
+					/>
+				</button>
+			);
+
+		case "int":
+			return (
+				<input
+					type="number"
+					step="1"
+					className={baseInput}
+					defaultValue={value}
+					onBlur={(e) => onChange(String(Math.round(Number(e.target.value))))}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+					}}
+				/>
+			);
+
+		case "float":
+			return (
+				<input
+					type="number"
+					step="any"
+					className={baseInput}
+					defaultValue={value}
+					onBlur={(e) => onChange(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+					}}
+				/>
+			);
+
+		case "date":
+			return (
+				<input
+					type="datetime-local"
+					className={baseInput}
+					defaultValue={value}
+					onBlur={(e) => onChange(e.target.value)}
+				/>
+			);
+
+		case "obj":
+			return (
+				<textarea
+					className={`${baseInput} resize-none leading-relaxed`}
+					rows={3}
+					defaultValue={value || "{}"}
+					onBlur={(e) => onChange(e.target.value)}
+					placeholder="{}"
+					spellCheck={false}
+				/>
+			);
+
+		case "pulse":
+			return (
+				<button
+					className="w-full py-1 px-3 rounded text-[11px] font-medium bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20 transition-colors cursor-pointer"
+					onClick={() =>
+						onChange(
+							"last - " +
+								new Date().getHours().toString().padStart(2, "0") +
+								":" +
+								new Date().getMinutes().toString().padStart(2, "0") +
+								":" +
+								new Date().getSeconds().toString().padStart(2, "0"),
+						)
+					}>
+					▶ Test pull
+				</button>
+			);
+
+		case "encrypted":
+			return (
+				<input
+					type="password"
+					className={baseInput}
+					defaultValue={value}
+					onBlur={(e) => onChange(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+					}}
+					placeholder="••••••••"
+				/>
+			);
+
+		case "str":
+		default:
+			return (
+				<input
+					type="text"
+					className={baseInput}
+					defaultValue={value}
+					onBlur={(e) => onChange(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+					}}
+				/>
+			);
+	}
 };
 
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: 'var(--surface2)',
-  border: '1px solid rgba(255,255,255,0.14)',
-  borderRadius: 5,
-  padding: '5px 8px',
-  fontFamily: 'inherit',
-  fontSize: 11,
-  color: 'var(--text)',
-  outline: 'none',
-};
+// ── Section label ────────────────────────────────────────────────────────────
+
+const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+	<div className="text-[9px] tracking-widest uppercase text-white/30 mb-2 mt-4 first:mt-0">{children}</div>
+);
+
+// ── Main Inspector ───────────────────────────────────────────────────────────
 
 export const Inspector: React.FC = () => {
-  const selected = useUIStore((s) => s.selected);
-  const nodes = useGraphStore((s) => s.nodes);
-  const edges = useGraphStore((s) => s.edges);
+	const selected = useUIStore((s) => s.selected);
+	const nodes = useGraphStore((s) => s.nodes);
+	const edges = useGraphStore((s) => s.edges);
 
-  const handleConfigChange = useCallback(
-    (nodeId: string, key: string, value: string) => {
-      dispatch.updateConfig(nodeId, { [key]: value });
-    },
-    []
-  );
+	// Set of `nodeId:portName` input ports that are connected via an edge
+	const connectedInputs = new Set(Object.values(edges).map((e) => `${e.dst}:${e.dstPort}`));
 
-  const handleLabelChange = useCallback(
-    (nodeId: string, value: string) => {
-      dispatch.updateLabel(nodeId, value);
-    },
-    []
-  );
+	const handleInputChange = useCallback((nodeId: string, port: string, value: string) => {
+		dispatch.updateInputValue(nodeId, port, value);
+	}, []);
 
-  const handleDeleteNode = useCallback((id: string) => {
-    dispatch.removeNode(id);
-    useUIStore.getState().clearSelected();
-  }, []);
+	const handleLabelChange = useCallback((nodeId: string, value: string) => {
+		dispatch.updateLabel(nodeId, value);
+	}, []);
 
-  const handleDeleteEdge = useCallback((id: string) => {
-    dispatch.removeEdge(id);
-    useUIStore.getState().clearSelected();
-  }, []);
+	const handleDeleteNode = useCallback((id: string) => {
+		dispatch.removeNode(id);
+		useUIStore.getState().clearSelected();
+	}, []);
 
-  const renderEmpty = () => (
-    <>
-      <p style={{ color: 'var(--text-muted)', fontSize: 11, lineHeight: 1.7 }}>
-        Select a node or edge to inspect it.
-        <br /><br />
-        Drag from an output port to an input port to connect nodes.
-      </p>
-      <PortLegend />
-    </>
-  );
+	const handleDeleteEdge = useCallback((id: string) => {
+		dispatch.removeEdge(id);
+		useUIStore.getState().clearSelected();
+	}, []);
 
-  const renderNodeInspector = (nodeId: string) => {
-    const node = nodes[nodeId];
-    if (!node) return renderEmpty();
-    const color = NODE_TYPE_COLOR[node.type];
+	const renderEmpty = () => (
+		<p className="text-[11px] text-white/30 leading-relaxed">
+			Select a node or edge to inspect it.
+			<br />
+			<br />
+			Drag or click from an output port to an input port to connect nodes.
+		</p>
+	);
 
-    return (
-      <>
-        {/* Type badge */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={labelStyle}>type</div>
-          <span style={{
-            display: 'inline-block', padding: '2px 8px',
-            borderRadius: 4, fontSize: 10, fontWeight: 700,
-            background: `color-mix(in srgb, ${color} 15%, transparent)`,
-            color,
-          }}>
-            {node.type}
-          </span>
-        </div>
+	const renderNodeInspector = (nodeId: string) => {
+		const node = nodes[nodeId];
+		if (!node) return renderEmpty();
 
-        {/* ID (read-only) */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={labelStyle}>id</div>
-          <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{node.id}</div>
-        </div>
+		const headerColor = NODE_TYPE_HEADER_COLOR[node.type];
 
-        {/* Label */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={labelStyle}>label</div>
-          <input
-            style={inputStyle}
-            defaultValue={node.label}
-            onBlur={(e) => handleLabelChange(nodeId, e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-          />
-        </div>
+		return (
+			<div className="flex flex-col gap-0">
+				{/* Node type header */}
+				<div
+					className="flex items-center justify-between px-3 py-2 rounded-md mb-4 text-white"
+					style={{ background: headerColor }}>
+					<span className="text-[11px] font-semibold">{node.label}</span>
+					<span className="text-[9px] opacity-50">{node.id}</span>
+				</div>
 
-        {/* Config fields */}
-        <div style={{ marginBottom: 6, ...labelStyle }}>config</div>
-        {Object.entries(node.config).map(([key, value]) => (
-          <div key={key} style={{ marginBottom: 12 }}>
-            <div style={labelStyle}>{key}</div>
-            <input
-              style={inputStyle}
-              defaultValue={value}
-              onBlur={(e) => handleConfigChange(nodeId, key, e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-            />
-          </div>
-        ))}
+				{/* Label */}
+				<SectionLabel>label</SectionLabel>
+				<input
+					className="w-full bg-white/5 border border-white/10 rounded text-[11px] text-white/80 outline-none px-2 py-1 mb-3 focus:border-blue-500/60 transition-colors"
+					defaultValue={node.label}
+					onBlur={(e) => handleLabelChange(nodeId, e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+					}}
+				/>
 
-        {/* Delete */}
-        <button
-          style={{
-            width: '100%', marginTop: 8, padding: '6px',
-            background: 'rgba(239,68,68,0.12)',
-            border: '1px solid rgba(239,68,68,0.3)',
-            borderRadius: 6, color: 'var(--red)',
-            fontFamily: 'inherit', fontSize: 11, cursor: 'pointer',
-          }}
-          onClick={() => handleDeleteNode(nodeId)}
-        >
-          Remove node
-        </button>
-      </>
-    );
-  };
+				{/* Input port values */}
+				{node.inputs.length > 0 && (
+					<>
+						<SectionLabel>inputs</SectionLabel>
+						<div className="flex flex-col gap-3 mb-2">
+							{node.inputs.map((port) => {
+								const key = `${nodeId}:${port.name}`;
+								const isOverridden = connectedInputs.has(key);
+								const value = node.inputValues?.[port.name] ?? port.defaultValue ?? "";
+								const typeColor = DATA_TYPE_COLOR[port.type];
 
-  const renderEdgeInspector = (edgeId: string) => {
-    const edge = edges[edgeId];
-    if (!edge) return renderEmpty();
+								return (
+									<div key={port.name}>
+										<div className="flex items-center gap-1.5 mb-1">
+											{/* Type dot */}
+											<div
+												className="w-1.5 h-1.5 rounded-full shrink-0"
+												style={{ background: typeColor }}
+											/>
+											<span className="text-[10px] text-white/60 flex-1">{port.label}</span>
+											<span
+												className="text-[9px] font-bold tracking-wide"
+												style={{ color: typeColor }}>
+												{port.type}
+												{port.isArray ? "[]" : ""}
+											</span>
+											{isOverridden && (
+												<span className="text-[8px] text-white/25 ml-1 italic">overridden</span>
+											)}
+										</div>
+										<PortInput
+											port={port}
+											value={value}
+											isOverridden={isOverridden}
+											onChange={(v) => handleInputChange(nodeId, port.name, v)}
+										/>
+									</div>
+								);
+							})}
+						</div>
+					</>
+				)}
 
-    return (
-      <>
-        <div style={{ marginBottom: 14 }}>
-          <div style={labelStyle}>edge id</div>
-          <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{edge.id}</div>
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <div style={labelStyle}>source</div>
-          <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{edge.src} → {edge.srcPort}</div>
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <div style={labelStyle}>destination</div>
-          <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{edge.dst} → {edge.dstPort}</div>
-        </div>
-        <button
-          style={{
-            width: '100%', marginTop: 8, padding: '6px',
-            background: 'rgba(239,68,68,0.12)',
-            border: '1px solid rgba(239,68,68,0.3)',
-            borderRadius: 6, color: 'var(--red)',
-            fontFamily: 'inherit', fontSize: 11, cursor: 'pointer',
-          }}
-          onClick={() => handleDeleteEdge(edgeId)}
-        >
-          Remove edge
-        </button>
-      </>
-    );
-  };
+				{/* Output port info (read-only) */}
+				{node.outputs.length > 0 && (
+					<>
+						<SectionLabel>outputs</SectionLabel>
+						<div className="flex flex-col gap-1 mb-3">
+							{node.outputs.map((port) => {
+								const typeColor = DATA_TYPE_COLOR[port.type];
+								return (
+									<div key={port.name} className="flex items-center gap-1.5 py-0.5">
+										<div
+											className="w-1.5 h-1.5 rounded-full shrink-0"
+											style={{ background: typeColor }}
+										/>
+										<span className="text-[10px] text-white/50 flex-1">{port.label}</span>
+										<span className="text-[9px] font-bold" style={{ color: typeColor }}>
+											{port.type}
+											{port.isArray ? "[]" : ""}
+										</span>
+									</div>
+								);
+							})}
+						</div>
+					</>
+				)}
 
-  return (
-    <div style={{
-      width: 350, flexShrink: 0,
-      background: 'var(--surface)',
-      borderLeft: '1px solid var(--border)',
-      display: 'flex', flexDirection: 'column',
-      fontSize: 12,
-    }}>
-      <div style={{
-        padding: '12px 14px 10px',
-        fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase',
-        color: 'var(--text-muted)', borderBottom: '1px solid var(--border)',
-      }}>
-        Inspector
-      </div>
-      <div style={{ padding: '12px 14px', flex: 1, overflowY: 'auto' }}>
-        {!selected && renderEmpty()}
-        {selected?.kind === 'node' && renderNodeInspector(selected.id)}
-        {selected?.kind === 'edge' && renderEdgeInspector(selected.id)}
-      </div>
-    </div>
-  );
+				{/* Delete */}
+				<button
+					className="w-full mt-2 py-1.5 rounded text-[11px] bg-red-500/10 border border-red-500/25 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+					onClick={() => handleDeleteNode(nodeId)}>
+					Remove node
+				</button>
+			</div>
+		);
+	};
+
+	const renderEdgeInspector = (edgeId: string) => {
+		const edge = edges[edgeId];
+		if (!edge) return renderEmpty();
+		const srcNode = nodes[edge.src];
+		const dstNode = nodes[edge.dst];
+		const srcPort = srcNode?.outputs.find((p) => p.name === edge.srcPort);
+		const dstPort = dstNode?.inputs.find((p) => p.name === edge.dstPort);
+		const typeColor = srcPort ? DATA_TYPE_COLOR[srcPort.type] : "var(--text-muted)";
+
+		return (
+			<div className="flex flex-col gap-3">
+				<SectionLabel>edge</SectionLabel>
+
+				<div className="flex flex-col gap-2 text-[11px]">
+					<div className="flex justify-between items-center">
+						<span className="text-white/30">id</span>
+						<span className="text-white/50 font-mono">{edge.id}</span>
+					</div>
+
+					{/* Type pill */}
+					{srcPort && (
+						<div className="flex justify-between items-center">
+							<span className="text-white/30">type</span>
+							<span
+								className="text-[9px] font-bold px-2 py-0.5 rounded"
+								style={{ color: typeColor, background: `${typeColor}18` }}>
+								{srcPort.type}
+								{srcPort.isArray ? "[]" : ""}
+							</span>
+						</div>
+					)}
+
+					{/* Source */}
+					<div className="bg-white/5 rounded p-2 border border-white/5">
+						<div className="text-[9px] text-white/25 uppercase tracking-widest mb-1">source</div>
+						<div className="text-white/60">{srcNode?.label ?? edge.src}</div>
+						<div className="text-[10px] text-white/30">→ {edge.srcPort}</div>
+					</div>
+
+					{/* Destination */}
+					<div className="bg-white/5 rounded p-2 border border-white/5">
+						<div className="text-[9px] text-white/25 uppercase tracking-widest mb-1">destination</div>
+						<div className="text-white/60">{dstNode?.label ?? edge.dst}</div>
+						<div className="text-[10px] text-white/30">→ {edge.dstPort}</div>
+					</div>
+				</div>
+
+				<button
+					className="w-full mt-1 py-1.5 rounded text-[11px] bg-red-500/10 border border-red-500/25 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+					onClick={() => handleDeleteEdge(edgeId)}>
+					Remove edge
+				</button>
+			</div>
+		);
+	};
+
+	return (
+		<div
+			className="w-56 shrink-0 flex flex-col text-xs border-l border-white/5"
+			style={{ background: "var(--surface)" }}>
+			<div className="px-3 py-2.5 text-[9px] tracking-widest uppercase text-white/25 border-b border-white/5">
+				Inspector
+			</div>
+			<div className="p-3 flex-1 overflow-y-auto">
+				{!selected && renderEmpty()}
+				{selected?.kind === "node" && renderNodeInspector(selected.id)}
+				{selected?.kind === "edge" && renderEdgeInspector(selected.id)}
+			</div>
+		</div>
+	);
 };

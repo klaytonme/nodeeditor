@@ -5,7 +5,7 @@ import { dispatch } from '@/lib/sync/dispatch';
 import { useUIStore } from '@/lib/stores/uiStore';
 import { useGraphStore } from '@/lib/stores/graphStore';
 import { syncLayerStub } from '@/lib/sync/syncLayerStub';
-import { NODE_TEMPLATES, NODE_TYPE_COLOR } from '@/lib/constants';
+import { NODE_TEMPLATES, NODE_TYPE_HEADER_COLOR } from '@/lib/constants';
 import type { NodeType, SyncStatus } from '@/lib/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ export const Toolbar: React.FC = () => {
         >
           <span style={{
             width: 6, height: 6, borderRadius: '50%',
-            background: NODE_TYPE_COLOR[type], flexShrink: 0,
+            background: NODE_TYPE_HEADER_COLOR[type], flexShrink: 0,
           }} />
           {type.charAt(0).toUpperCase() + type.slice(1)}
         </button>
