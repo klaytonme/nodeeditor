@@ -56,14 +56,14 @@ const Dropdown: React.FC<DropdownProps> = ({ label, color, items, onSelect }) =>
 						: "bg-transparent border-white/10 text-white/50 hover:bg-white/5 hover:text-white/80 hover:border-white/15"
 				}`}
 				onClick={() => setOpen((v) => !v)}>
-				<span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+				<span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
 				{label}
 				<span className={`text-[9px] transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
 			</button>
 
 			{open && (
 				<div
-					className="absolute top-full left-0 mt-1.5 z-50 min-w-44 rounded-lg border border-white/10 overflow-hidden shadow-2xl"
+					className="absolute top-full left-0 mt-1.5 z-50 min-w-60 rounded-lg border border-white/10 overflow-hidden shadow-2xl"
 					style={{ background: "rgb(22, 24, 28)" }}>
 					{items.map((item) => {
 						const template = NODE_LIBRARY[item.kind];
@@ -77,7 +77,7 @@ const Dropdown: React.FC<DropdownProps> = ({ label, color, items, onSelect }) =>
 									onSelect(item.kind, item.categoryOverride);
 									setOpen(false);
 								}}>
-								<span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: catColor }} />
+								<span className="w-2 h-2 rounded-sm shrink-0" style={{ background: catColor }} />
 								<span className="flex-1">{item.label}</span>
 								<span className="text-[9px] text-white/20">
 									{template.inputs.length}in · {template.outputs.length}out
@@ -122,7 +122,7 @@ export const Toolbar: React.FC = () => {
 
 	return (
 		<div
-			className="flex items-center gap-2 px-4 h-12 border-b border-white/5 flex-shrink-0 z-50"
+			className="flex items-center gap-2 px-4 h-12 border-b border-white/5 shrink-0 z-50"
 			style={{ background: "var(--surface)" }}>
 			{/* Logo */}
 			<span className="text-[13px] font-bold tracking-widest text-white mr-2">

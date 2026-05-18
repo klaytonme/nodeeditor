@@ -5,7 +5,7 @@ import { useUIStore } from '@/lib/stores/uiStore';
 import { useLogStore } from '@/lib/stores/logStore';
 import { pendingOps } from '@/lib/sync/pendingOps';
 import { syncLayerStub } from '@/lib/sync/syncLayerStub';
-import type { NodeDef, EdgeDef, GraphOp, SyncLayer } from '@/lib/types';
+import type { NodeDef, EdgeDef, GraphOp, SyncLayer, PortDef } from '@/lib/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // dispatch — the ONLY way the UI should mutate graph state.
@@ -149,6 +149,18 @@ export const dispatch = {
 			_applyUpdateInputValue(id, port, oldValue)
 		);
 	},
+
+
+	updateOutputs(id: string, outputs: PortDef[]) {
+		const { nodes, _applyUpdateOutputs } = useGraphStore.getState();
+		const oldOutputs = [...(nodes[id]?.outputs ?? [])];
+		_applyUpdateOutputs(id, outputs);
+		send(
+			{ type: 'UPDATE_OUTPUTS', id, outputs },
+			() => _applyUpdateOutputs(id, oldOutputs)
+		);
+	},
+
 
 	clearGraph() {
 		const { nodes } = useGraphStore.getState();

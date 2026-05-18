@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import type { NodeDef, EdgeDef, GraphState } from '@/lib/types';
+import type { NodeDef, EdgeDef, GraphState, PortDef } from '@/lib/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // graphStore — canonical, backend-synced state.
@@ -19,9 +19,8 @@ interface GraphStore extends GraphState {
 	_applyUpdateConfig: (id: string, patch: Record<string, string>) => void;
 	_applyAddEdge: (edge: EdgeDef) => void;
 	_applyRemoveEdge: (id: string) => void;
-
-	// Full graph replace — use when hydrating from backend on connect
 	_applyUpdateInputValue: (id: string, port: string, value: string) => void;
+	_applyUpdateOutputs: (id: string, outputs: PortDef[]) => void;
 	_hydrateGraph: (graph: { nodes: Record<string, NodeDef>; edges: Record<string, EdgeDef> }) => void;
 }
 
@@ -88,6 +87,24 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
 				version: s.version + 1,
 			};
 		}),
+
+	_applyUpdateOutputs: (id, outputs) =>
+		set((s) => {
+			if (!s.nodes[id]) return s;
+			// Remove any edges connected to deleted output ports
+			const outputNames = new Set(outputs.map((p) => p.name));
+			const edges = Object.fromEntries(
+				Object.entries(s.edges).filter(([, e]) =>
+					e.src !== id || outputNames.has(e.srcPort)
+				)
+			);
+			return {
+				nodes: { ...s.nodes, [id]: { ...s.nodes[id], outputs } },
+				edges,
+				version: s.version + 1,
+			};
+		}),
+
 
 	_hydrateGraph: ({ nodes, edges }) =>
 		set({ nodes, edges, version: 0 }),

@@ -5,23 +5,79 @@ import { useUIStore } from '@/lib/stores/uiStore';
 import { NODE_LIBRARY } from '@/lib/constants';
 
 export function seedGraph() {
-	const n1 = dispatch.addNode({ ...NODE_LIBRARY.http, label: 'Events API', category: 'source' });
-	const n2 = dispatch.addNode({ ...NODE_LIBRARY.parse_obj, label: 'Parse Response' });
-	const n3 = dispatch.addNode({ ...NODE_LIBRARY.compare, label: 'Score > 0.5' });
-	const n4 = dispatch.addNode({ ...NODE_LIBRARY.filter, label: 'Gate' });
-	const n5 = dispatch.addNode({ ...NODE_LIBRARY.db_write, label: 'Postgres' });
+	const n1 = dispatch.addNode({ ...NODE_LIBRARY.timer, label: 'Pulse' });
+	const n2 = dispatch.addNode({ ...NODE_LIBRARY.http, label: 'Test Data Source', category: 'source' });
+	const n3 = dispatch.addNode({ ...NODE_LIBRARY.constant, label: "Constant" });
+	const n4 = dispatch.addNode({ ...NODE_LIBRARY.parse_obj, label: 'Parse Response' });
+	const n5 = dispatch.addNode({ ...NODE_LIBRARY.compare, label: 'Date Check' });
+	const n6 = dispatch.addNode({ ...NODE_LIBRARY.filter, label: "Filter" });
+	const n7 = dispatch.addNode({ ...NODE_LIBRARY.http, label: "Test Data Endpoint", category: 'sink' })
+
+
+	dispatch.updateInputValue(n1.id, "interval", "500");
+
+	dispatch.updateInputValue(n2.id, "url", "test.data.net/poll")
+	dispatch.updateInputValue(n2.id, "headers", "{auth:smth}");
+	dispatch.updateInputValue(n2.id, 'interval', "");
+
+	dispatch.updateInputValue(n3.id, "value", "Jan 15, 2025 00:30:00 PST");
+
+	dispatch.updateOutputs(n4.id, [...n4.outputs, {
+		name: "id",
+		label: "id",
+		dataType: "int",
+		isArray: false,
+		defaultValue: "",
+		userDefined: true,
+		listenedField: false,
+
+	}, {
+		name: "timestamp",
+		label: "timestamp",
+		dataType: "date",
+		isArray: false,
+		defaultValue: "",
+		userDefined: true,
+		listenedField: false,
+
+	}, {
+		name: "records",
+		label: "records",
+		dataType: "obj",
+		isArray: true,
+		defaultValue: "",
+		userDefined: true,
+		listenedField: false,
+
+	}]);
+
+	dispatch.updateInputValue(n5.id, "operator", ">=");
+
+	dispatch.updateInputValue(n7.id, 'url', "endpoint.data.net/send");
+	dispatch.updateInputValue(n7.id, 'method', "POST");
+	dispatch.updateInputValue(n7.id, 'headers', "{auth:secondGo");
+	dispatch.updateInputValue(n7.id, 'interval', "");
+
+
+
 
 	const { setPosition } = useUIStore.getState();
-	setPosition(n1.id, { x: 40, y: 80 });
-	setPosition(n2.id, { x: 310, y: 60 });
+	setPosition(n1.id, { x: 40, y: 300 });
+	setPosition(n2.id, { x: 310, y: 40 });
 	setPosition(n3.id, { x: 580, y: 40 });
-	setPosition(n4.id, { x: 580, y: 240 });
-	setPosition(n5.id, { x: 850, y: 150 });
+	setPosition(n4.id, { x: 580, y: 200 });
+	setPosition(n5.id, { x: 850, y: 80 });
+	setPosition(n6.id, { x: 1120, y: 250 });
+	setPosition(n7.id, { x: 580, y: 450 });
 
 	setTimeout(() => {
-		dispatch.addEdge(n1.id, 'data', n2.id, 'in');
-		dispatch.addEdge(n2.id, 'out', n3.id, 'a');
-		dispatch.addEdge(n3.id, 'result', n4.id, 'condition');
-		dispatch.addEdge(n4.id, 'pass', n5.id, 'data');
+		dispatch.addEdge(n1.id, 'tick', n2.id, 'trigger');
+		dispatch.addEdge(n1.id, 'tick', n7.id, 'trigger');
+		dispatch.addEdge(n2.id, 'data', n4.id, 'in');
+		dispatch.addEdge(n3.id, 'value', n5.id, 'a');
+		dispatch.addEdge(n4.id, 'id', n5.id, 'b');
+		dispatch.addEdge(n4.id, 'records', n6.id, 'in');
+		dispatch.addEdge(n5.id, 'result', n6.id, 'condition');
+		dispatch.addEdge(n6.id, 'pass', n7.id, 'body');
 	}, 50);
 }

@@ -65,10 +65,10 @@ export const NODE_LIBRARY: Record<NodeKind, NodeTemplate> = {
 
 	timer: {
 		kind: 'timer', category: 'source', label: 'Timer',
-		inputValues: { interval: '1s', enabled: 'true' },
+		inputValues: { interval: '500', enabled: 'true' },
 		config: {},
 		inputs: [
-			{ name: 'interval', label: 'interval', dataType: 'str', isArray: false, defaultValue: '1s' },
+			{ name: 'interval', label: 'interval (ms)', dataType: 'int', isArray: false, defaultValue: '500' },
 			{ name: 'enabled', label: 'enabled', dataType: 'bool', isArray: false, defaultValue: 'true' },
 		],
 		outputs: [
@@ -104,7 +104,6 @@ export const NODE_LIBRARY: Record<NodeKind, NodeTemplate> = {
 		],
 		outputs: [
 			// Outputs are dynamic when listen=true; these are the static defaults
-			{ name: 'out', label: 'out', dataType: 'any', isArray: false },
 			{ name: 'keys', label: 'keys', dataType: 'str', isArray: true },
 		],
 	},

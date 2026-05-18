@@ -42,8 +42,10 @@ export interface PortDef {
 	dataType: DataType;
 	isArray: boolean;
 	defaultValue?: string;
-	/** If true, this port is only active when a specific config value is set */
 	activeWhen?: { config: string; value: string };
+	userDefined?: boolean;
+	listenedField?: boolean;
+
 }
 
 export interface NodeDef {
@@ -95,6 +97,7 @@ export type GraphOp =
 	| { type: 'REMOVE_NODE'; id: string }
 	| { type: 'UPDATE_CONFIG'; id: string; patch: Record<string, string> }
 	| { type: 'UPDATE_INPUT'; id: string; port: string; value: string }
+	| { type: 'UPDATE_OUTPUTS'; id: string; outputs: PortDef[] }
 	| { type: 'ADD_EDGE'; edge: EdgeDef }
 	| { type: 'REMOVE_EDGE'; id: string };
 

@@ -5,8 +5,9 @@ import { useGraphStore } from "@/lib/stores/graphStore";
 import { useUIStore } from "@/lib/stores/uiStore";
 import { dispatch } from "@/lib/sync/dispatch";
 import { CATEGORY_HEADER_COLOR, DATA_TYPE_COLOR } from "@/lib/constants";
-import type { DataType, NodeDef, PortDef } from "@/lib/types";
+import { DATA_TYPES, type DataType, type NodeDef, type PortDef } from "@/lib/types";
 import { TypeKey } from "./TypeKey";
+import { PortInterface } from "../nodes/PortInterface";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Inspector — typed input controls per port dataType.
@@ -141,6 +142,125 @@ const PortInput: React.FC<PortInputProps> = ({ port, value, isOverridden, onChan
 	}
 };
 
+// ── Parse Object field editor ─────────────────────────────────────────────────
+
+interface ParseObjFieldEditorProps {
+	nodeId: string;
+	outputs: PortDef[];
+}
+
+const ParseObjFieldEditor: React.FC<ParseObjFieldEditorProps> = ({ nodeId, outputs }) => {
+	const [newName, setNewName] = useState("");
+	const [newType, setNewType] = useState<DataType>("any");
+
+	const userFields = outputs.filter((p) => p.userDefined);
+	const builtinPorts = outputs.filter((p) => !p.userDefined);
+
+	const addField = () => {
+		const name = newName.trim();
+		if (!name) return;
+		// Prevent duplicates
+		if (outputs.some((p) => p.name === name)) return;
+		const newPort: PortDef = {
+			name,
+			label: name,
+			dataType: newType,
+			isArray: false,
+			userDefined: true,
+		};
+		dispatch.updateOutputs(nodeId, [...outputs, newPort]);
+		setNewName("");
+		setNewType("any");
+	};
+
+	const removeField = (portName: string) => {
+		dispatch.updateOutputs(
+			nodeId,
+			outputs.filter((p) => p.name !== portName),
+		);
+	};
+
+	const baseInput =
+		"bg-white/5 border border-white/10 rounded text-[11px] text-white/80 outline-none px-2 py-1 transition-colors focus:border-blue-500/60";
+
+	return (
+		<div className="flex flex-col gap-2">
+			{/* Built-in ports — read-only */}
+			{builtinPorts.map((port) => {
+				const color = DATA_TYPE_COLOR[port.dataType];
+				return (
+					<div key={port.name} className="flex items-center gap-2 py-0.5">
+						<PortInterface label={""} dataType={port.dataType} isArray={false} />
+						<span className="text-[10px] text-white/50 flex-1">{port.label}</span>
+						<span className="text-[9px] font-bold" style={{ color }}>
+							{port.dataType}
+							{port.isArray ? "[]" : ""}
+						</span>
+						<div className="w-4" /> {/* spacer where delete btn would be */}
+					</div>
+				);
+			})}
+
+			{/* User-defined / listened fields */}
+			{userFields.length > 0 && (
+				<div className="flex flex-col gap-1 mt-1 pt-1 border-t border-white/5">
+					{userFields.map((port) => {
+						const color = DATA_TYPE_COLOR[port.dataType];
+						return (
+							<div key={port.name} className="flex items-center gap-2 py-0.5 group">
+								<PortInterface label={""} dataType={port.dataType} isArray={false} />
+								<span className="text-[10px] text-white/70 flex-1 font-mono">{port.name}</span>
+								{port.listenedField && (
+									<span className="text-[8px] text-white/20 italic">listened</span>
+								)}
+								<span className="text-[9px] font-bold" style={{ color }}>
+									{port.dataType}
+								</span>
+								<button
+									className="w-4 h-4 flex items-center justify-center rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+									onClick={() => removeField(port.name)}
+									title="Remove field">
+									×
+								</button>
+							</div>
+						);
+					})}
+				</div>
+			)}
+
+			{/* Add field row */}
+			<div className="flex gap-1.5 mt-2 pt-2 border-t border-white/5">
+				<input
+					className={`${baseInput} flex-1 min-w-0`}
+					placeholder="field name"
+					value={newName}
+					onChange={(e) => setNewName(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") addField();
+					}}
+					spellCheck={false}
+				/>
+				<select
+					className={`${baseInput} w-16 cursor-pointer`}
+					value={newType}
+					onChange={(e) => setNewType(e.target.value as DataType)}>
+					{DATA_TYPES.filter((t) => t !== "unknown").map((t) => (
+						<option key={t} value={t}>
+							{t}
+						</option>
+					))}
+				</select>
+				<button
+					className="px-2 py-1 rounded text-[11px] bg-blue-500/10 border border-blue-500/25 text-blue-400 hover:bg-blue-500/20 transition-colors cursor-pointer shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+					onClick={addField}
+					disabled={!newName.trim()}>
+					+
+				</button>
+			</div>
+		</div>
+	);
+};
+
 // ── Section label ────────────────────────────────────────────────────────────
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -205,7 +325,7 @@ export const Inspector: React.FC = () => {
 				</div>
 
 				{/* Label */}
-				<SectionLabel>label</SectionLabel>
+				<SectionLabel>Label</SectionLabel>
 				<input
 					className="w-full bg-white/5 border border-white/10 rounded text-[11px] text-white/80 outline-none px-2 py-1 mb-3 focus:border-blue-500/60 transition-colors"
 					defaultValue={node.label}
@@ -218,7 +338,7 @@ export const Inspector: React.FC = () => {
 				{/* Input port values */}
 				{node.inputs.length > 0 && (
 					<>
-						<SectionLabel>inputs</SectionLabel>
+						<SectionLabel>Inputs</SectionLabel>
 						<div className="flex flex-col gap-3 mb-2">
 							{node.inputs.map((port) => {
 								const key = `${nodeId}:${port.name}`;
@@ -259,28 +379,28 @@ export const Inspector: React.FC = () => {
 				)}
 
 				{/* Output port info (read-only) */}
-				{node.outputs.length > 0 && (
-					<>
-						<SectionLabel>outputs</SectionLabel>
-						<div className="flex flex-col gap-1 mb-3">
-							{node.outputs.map((port) => {
-								const typeColor = DATA_TYPE_COLOR[port.dataType];
-								return (
-									<div key={port.name} className="flex items-center gap-1.5 py-0.5">
-										<div
-											className="w-1.5 h-1.5 rounded-full shrink-0"
-											style={{ background: typeColor }}
-										/>
-										<span className="text-[10px] text-white/50 flex-1">{port.label}</span>
-										<span className="text-[9px] font-bold" style={{ color: typeColor }}>
-											{port.dataType}
-											{port.isArray ? "[]" : ""}
-										</span>
-									</div>
-								);
-							})}
-						</div>
-					</>
+				<SectionLabel>Outputs</SectionLabel>
+				{node.kind === "parse_obj" ? (
+					<ParseObjFieldEditor nodeId={nodeId} outputs={node.outputs} />
+				) : (
+					<div className="flex flex-col gap-1 mb-3">
+						{node.outputs.map((port) => {
+							const typeColor = DATA_TYPE_COLOR[port.dataType];
+							return (
+								<div key={port.name} className="flex items-center gap-1.5 py-0.5">
+									<div
+										className="w-1.5 h-1.5 rounded-full shrink-0"
+										style={{ background: typeColor }}
+									/>
+									<span className="text-[10px] text-white/50 flex-1">{port.label}</span>
+									<span className="text-[9px] font-bold" style={{ color: typeColor }}>
+										{port.dataType}
+										{port.isArray ? "[]" : ""}
+									</span>
+								</div>
+							);
+						})}
+					</div>
 				)}
 
 				{/* Delete */}
@@ -304,7 +424,7 @@ export const Inspector: React.FC = () => {
 
 		return (
 			<div className="flex flex-col gap-3">
-				<SectionLabel>edge</SectionLabel>
+				<SectionLabel>Edge</SectionLabel>
 
 				<div className="flex flex-col gap-2 text-[11px]">
 					<div className="flex justify-between items-center">
@@ -351,7 +471,7 @@ export const Inspector: React.FC = () => {
 
 	return (
 		<div
-			className="w-56 shrink-0 flex flex-col text-xs border-l border-white/5"
+			className="w-75 shrink-0 flex flex-col text-xs border-l border-white/5"
 			style={{ background: "var(--surface)" }}>
 			<div className="px-3 py-2.5 text-[9px] tracking-widest uppercase text-white/25 border-b border-white/5">
 				Inspector
