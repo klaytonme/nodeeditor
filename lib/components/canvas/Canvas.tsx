@@ -23,24 +23,35 @@ export const Canvas: React.FC = () => {
 	const wrapRef = useRef<HTMLDivElement>(null);
 	const nodes = useGraphStore((s) => s.nodes);
 	const edges = useGraphStore((s) => s.edges);
+	const version = useGraphStore((s) => s.version);
 	const positions = useUIStore((s) => s.positions);
 	const selected = useUIStore((s) => s.selected);
 	const portDrag = useUIStore((s) => s.portConnect);
 	const portConnect = useUIStore((s) => s.portConnect);
 
 	const { registerPort, updateAll, getPortPos } = usePortPositions(wrapRef);
+	const [tick, setTick] = useState(0);
 
-	// Recompute port positions after every render (node move / add / remove)
-	const [, setMounted] = useState(false);
-	useEffect(() => {
-		updateAll();
-		setMounted(true);
-	}, []); // eslint-disable-line react-hooks/exhaustive-deps
+	// // Recompute port positions after every render (node move / add / remove)
+	// const [, setMounted] = useState(false);
+	// useEffect(() => {
+	// 	updateAll();
+	// 	setMounted(true);
+	// }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Subsequent renders (node move, add/remove) — keep positions fresh
 	useEffect(() => {
 		updateAll();
 	});
+
+	useEffect(() => {
+		// rAF ensures the browser has painted the new nodes before we measure ports
+		const frame = requestAnimationFrame(() => {
+			updateAll();
+			setTick((t) => t + 1); // force EdgeLayer re-render with fresh positions
+		});
+		return () => cancelAnimationFrame(frame);
+	}, [version, positions]);
 
 	const canvasFocused = useRef(false);
 

@@ -54,6 +54,7 @@ export function useNodeDrag(
 				dragStart.current = null;
 				window.removeEventListener('mousemove', onMove);
 				window.removeEventListener('mouseup', onUp);
+				onDragMove?.();
 				// TODO: dispatch.updatePosition(nodeId, positions[nodeId])
 				// with POSITION_DEBOUNCE_MS debounce when backend is ready
 			};
