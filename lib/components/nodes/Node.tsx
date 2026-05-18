@@ -5,7 +5,7 @@ import type { NodeDef, PortPosition } from "@/lib/types";
 import { useUIStore } from "@/lib/stores/uiStore";
 import { useNodeDrag } from "@/lib/hooks/useNodeDrag";
 import { Port } from "./Port";
-import { NODE_TYPE_HEADER_COLOR, NODE_WIDTH } from "@/lib/constants";
+import { CATEGORY_HEADER_COLOR, NODE_WIDTH } from "@/lib/constants";
 
 interface NodeProps {
 	node: NodeDef;
@@ -44,7 +44,7 @@ export const Node: React.FC<NodeProps> = ({
 		[node.id],
 	);
 
-	const headerColor = NODE_TYPE_HEADER_COLOR[node.type];
+	const headerColor = CATEGORY_HEADER_COLOR[node.category];
 
 	return (
 		<div
@@ -115,7 +115,7 @@ export const Node: React.FC<NodeProps> = ({
 									nodeId={node.id}
 									portName={port.name}
 									label={port.label}
-									dataType={port.type}
+									dataType={port.dataType}
 									isArray={port.isArray}
 									side="input"
 									isConnected={isConnected}
@@ -143,7 +143,7 @@ export const Node: React.FC<NodeProps> = ({
 								nodeId={node.id}
 								portName={port.name}
 								label={port.label}
-								dataType={port.type}
+								dataType={port.dataType}
 								isArray={port.isArray}
 								side="output"
 								isConnected={connectedPorts.has(`output:${port.name}`)}

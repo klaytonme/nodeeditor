@@ -1,23 +1,55 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Core graph types — these are what get synced to the backend
+// Core graph types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type NodeType = 'source' | 'transform' | 'filter' | 'aggregate' | 'sink';
+export type NodeCategory = 'source' | 'transform' | 'sink';
 
-// Data types carried on ports — drives colour and shape of the port indicator
-export type DataType = 'str' | 'int' | 'float' | 'date' | 'obj' | 'bool' | 'pulse' | 'encrypted' | 'unknown';
+export type NodeKind =
+	// Sources
+	| 'constant'
+	| 'http'
+	| 'websocket'
+	| 'timer'
+	| 'csv'
+	// Transforms
+	| 'parse_obj'
+	| 'map'
+	| 'filter'
+	| 'branch'
+	| 'compare'
+	| 'merge'
+	| 'aggregate'
+	| 'format'
+	| 'regex'
+	| 'encode'
+	// Sinks
+	| 'log'
+	| 'db_write'
+	| 'webhook'
+	| 'publish';
+
+export const DATA_TYPES = [
+	'any', 'str', 'int', 'float', 'bool',
+	'date', 'obj', 'pulse', 'encrypted', 'unknown'
+] as const;
+
+export type DataType = typeof DATA_TYPES[number];
+
 
 export interface PortDef {
-	name: string;       // unique within the node
-	label: string;      // display label
-	type: DataType;
-	isArray: boolean;   // array = rotated square, scalar = circle
+	name: string;
+	label: string;
+	dataType: DataType;
+	isArray: boolean;
 	defaultValue?: string;
+	/** If true, this port is only active when a specific config value is set */
+	activeWhen?: { config: string; value: string };
 }
 
 export interface NodeDef {
 	id: string;
-	type: NodeType;
+	kind: NodeKind;
+	category: NodeCategory;
 	label: string;
 	inputValues: Record<string, string>;
 	config: Record<string, string>;
@@ -27,9 +59,9 @@ export interface NodeDef {
 
 export interface EdgeDef {
 	id: string;
-	src: string;      // node id
+	src: string;
 	srcPort: string;
-	dst: string;      // node id
+	dst: string;
 	dstPort: string;
 }
 
@@ -40,13 +72,10 @@ export interface GraphState {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UI-only types — never sent to the backend
+// UI types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface XYPosition {
-	x: number;
-	y: number;
-}
+export interface XYPosition { x: number; y: number; }
 
 export interface PortPosition extends XYPosition {
 	side: 'input' | 'output';
@@ -57,40 +86,24 @@ export type SelectionTarget =
 	| { kind: 'edge'; id: string }
 	| null;
 
-export interface UIState {
-	positions: Record<string, XYPosition>;
-	selected: SelectionTarget;
-	viewport: { x: number; y: number; zoom: number };
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
-// Op types — the unit of sync between client and backend
+// Op types
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type GraphOp =
 	| { type: 'ADD_NODE'; node: NodeDef }
 	| { type: 'REMOVE_NODE'; id: string }
-	| { type: 'UPDATE_CONFIG'; id: string; patch: Partial<Record<string, string>> }
+	| { type: 'UPDATE_CONFIG'; id: string; patch: Record<string, string> }
 	| { type: 'UPDATE_INPUT'; id: string; port: string; value: string }
 	| { type: 'ADD_EDGE'; edge: EdgeDef }
 	| { type: 'REMOVE_EDGE'; id: string };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sync layer interface — the contract syncLayer must satisfy.
-// Swap the stub implementation for a real WebSocket without touching anything else.
-// ─────────────────────────────────────────────────────────────────────────────
-
 export type SyncStatus = 'disconnected' | 'connecting' | 'connected' | 'syncing' | 'error';
 
 export interface SyncLayer {
-	/** Fire an op. Returns a txId the caller can use to track ACK/NACK. */
 	sendOp: (op: GraphOp) => string;
 	status: SyncStatus;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Log entry type (for the debug panel)
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type LogLevel = 'op' | 'ack' | 'err' | 'ws' | 'info';
 

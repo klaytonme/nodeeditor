@@ -4,8 +4,9 @@ import React, { useCallback, useState } from "react";
 import { useGraphStore } from "@/lib/stores/graphStore";
 import { useUIStore } from "@/lib/stores/uiStore";
 import { dispatch } from "@/lib/sync/dispatch";
-import { NODE_TYPE_HEADER_COLOR, DATA_TYPE_COLOR } from "@/lib/constants";
+import { CATEGORY_HEADER_COLOR, DATA_TYPE_COLOR } from "@/lib/constants";
 import type { DataType, NodeDef, PortDef } from "@/lib/types";
+import { TypeKey } from "./TypeKey";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Inspector — typed input controls per port dataType.
@@ -30,7 +31,7 @@ const PortInput: React.FC<PortInputProps> = ({ port, value, isOverridden, onChan
 		return <div className={`${baseInput} ${overrideClass} italic text-white/30`}>external input</div>;
 	}
 
-	switch (port.type) {
+	switch (port.dataType) {
 		case "bool":
 			return (
 				<button
@@ -175,19 +176,23 @@ export const Inspector: React.FC = () => {
 	}, []);
 
 	const renderEmpty = () => (
-		<p className="text-[11px] text-white/30 leading-relaxed">
-			Select a node or edge to inspect it.
-			<br />
-			<br />
-			Drag or click from an output port to an input port to connect nodes.
-		</p>
+		<div className="flex flex-col h-full">
+			<p className="text-[11px] text-white/30 leading-relaxed">
+				Select a node or edge to inspect it.
+				<br />
+				<br />
+				Drag or click from an output port to an input port to connect nodes.
+			</p>
+			<div className="flex-1"></div>
+			<TypeKey></TypeKey>
+		</div>
 	);
 
 	const renderNodeInspector = (nodeId: string) => {
 		const node = nodes[nodeId];
 		if (!node) return renderEmpty();
 
-		const headerColor = NODE_TYPE_HEADER_COLOR[node.type];
+		const headerColor = CATEGORY_HEADER_COLOR[node.category];
 
 		return (
 			<div className="flex flex-col gap-0">
@@ -219,7 +224,7 @@ export const Inspector: React.FC = () => {
 								const key = `${nodeId}:${port.name}`;
 								const isOverridden = connectedInputs.has(key);
 								const value = node.inputValues?.[port.name] ?? port.defaultValue ?? "";
-								const typeColor = DATA_TYPE_COLOR[port.type];
+								const typeColor = DATA_TYPE_COLOR[port.dataType];
 
 								return (
 									<div key={port.name}>
@@ -233,7 +238,7 @@ export const Inspector: React.FC = () => {
 											<span
 												className="text-[9px] font-bold tracking-wide"
 												style={{ color: typeColor }}>
-												{port.type}
+												{port.dataType}
 												{port.isArray ? "[]" : ""}
 											</span>
 											{isOverridden && (
@@ -259,7 +264,7 @@ export const Inspector: React.FC = () => {
 						<SectionLabel>outputs</SectionLabel>
 						<div className="flex flex-col gap-1 mb-3">
 							{node.outputs.map((port) => {
-								const typeColor = DATA_TYPE_COLOR[port.type];
+								const typeColor = DATA_TYPE_COLOR[port.dataType];
 								return (
 									<div key={port.name} className="flex items-center gap-1.5 py-0.5">
 										<div
@@ -268,7 +273,7 @@ export const Inspector: React.FC = () => {
 										/>
 										<span className="text-[10px] text-white/50 flex-1">{port.label}</span>
 										<span className="text-[9px] font-bold" style={{ color: typeColor }}>
-											{port.type}
+											{port.dataType}
 											{port.isArray ? "[]" : ""}
 										</span>
 									</div>
@@ -295,7 +300,7 @@ export const Inspector: React.FC = () => {
 		const dstNode = nodes[edge.dst];
 		const srcPort = srcNode?.outputs.find((p) => p.name === edge.srcPort);
 		const dstPort = dstNode?.inputs.find((p) => p.name === edge.dstPort);
-		const typeColor = srcPort ? DATA_TYPE_COLOR[srcPort.type] : "var(--text-muted)";
+		const typeColor = srcPort ? DATA_TYPE_COLOR[srcPort.dataType] : "var(--text-muted)";
 
 		return (
 			<div className="flex flex-col gap-3">
@@ -314,7 +319,7 @@ export const Inspector: React.FC = () => {
 							<span
 								className="text-[9px] font-bold px-2 py-0.5 rounded"
 								style={{ color: typeColor, background: `${typeColor}18` }}>
-								{srcPort.type}
+								{srcPort.dataType}
 								{srcPort.isArray ? "[]" : ""}
 							</span>
 						</div>

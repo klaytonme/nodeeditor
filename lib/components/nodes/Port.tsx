@@ -5,6 +5,7 @@ import { useUIStore } from "@/lib/stores/uiStore";
 import { DATA_TYPE_COLOR, PORT_SIZE } from "@/lib/constants";
 import type { DataType, PortPosition } from "@/lib/types";
 import { dispatch } from "@/lib/sync/dispatch";
+import { PortInterface } from "./PortInterface";
 
 interface PortProps {
 	nodeId: string;
@@ -51,17 +52,9 @@ export const Port: React.FC<PortProps> = ({
 	value,
 	isOverridden,
 }) => {
-	const color = DATA_TYPE_COLOR[dataType] ?? DATA_TYPE_COLOR.unknown;
 	const portConnect = useUIStore((s) => s.portConnect);
 
-	// Shape logic
-	const isEncrypted = dataType === "encrypted";
-	const borderRadius = isEncrypted ? 0 : isArray ? 2 : "50%";
-	const transform = isArray && !isEncrypted ? "rotate(45deg)" : undefined;
-
 	const isInput = side === "input";
-
-	const isPendingSource = portConnect?.srcNodeId === nodeId && portConnect?.srcPort === portName;
 
 	const handleMouseDown = useCallback(
 		(e: React.MouseEvent) => {
@@ -118,23 +111,6 @@ export const Port: React.FC<PortProps> = ({
 		[nodeId, portName, side, onDragMove],
 	);
 
-	const indicatorStyle: React.CSSProperties = {
-		width: PORT_SIZE,
-		height: PORT_SIZE,
-		flexShrink: 0,
-		background: color,
-		borderRadius,
-		transform,
-		border: `1px solid rgb(43, 43, 43)`,
-		cursor: "crosshair",
-		transition: "box-shadow 0.12s",
-		position: "absolute",
-		right: isInput ? "" : -PORT_SIZE / 2 + "px",
-		left: isInput ? -PORT_SIZE / 2 + "px" : "",
-		boxShadow: isConnected ? `0 0 0 2px ${color}44` : undefined,
-		zIndex: 10,
-	};
-
 	return (
 		<div className="flex items-center justify-between flex-row gap-3 h-6 relative px-1">
 			{/* Port indicator — sits at the outer edge */}
@@ -143,9 +119,11 @@ export const Port: React.FC<PortProps> = ({
 				data-port={portName}
 				data-node={nodeId}
 				data-side={side}
-				data-datatype={dataType}
-				data-isarray={String(isArray)}
-				style={indicatorStyle}
+				className="inline-flex absolute justify-center align-middle"
+				style={{
+					right: isInput ? "" : -PORT_SIZE / 2 + "px",
+					left: isInput ? -PORT_SIZE / 2 + "px" : "",
+				}}
 				onMouseDown={handleMouseDown}
 				onMouseUp={handleMouseUp}
 				onClick={handleClick}
@@ -153,10 +131,10 @@ export const Port: React.FC<PortProps> = ({
 					(e.currentTarget as HTMLElement).style.boxShadow = "0 0 5px 2px #48abe0";
 				}}
 				onMouseLeave={(e) => {
-					(e.currentTarget as HTMLElement).style.boxShadow = isConnected ? `0 0 0 2px ${color}44` : "";
-				}}
-				title={`${label} (${dataType}${isArray ? "[]" : ""})`}
-			/>
+					(e.currentTarget as HTMLElement).style.boxShadow = "";
+				}}>
+				<PortInterface label={label} dataType={dataType} isArray={isArray}></PortInterface>
+			</div>
 
 			{/* Label */}
 			<span
