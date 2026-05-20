@@ -1,0 +1,150 @@
+// ─── data/projects.ts ──────────────────────────────────────────────────────────
+//
+//  This is the single source of truth for all project content.
+//
+//  Tab order determines nav order. The Links tab should always be last.
+//  youtubeId is optional
+
+export type LinkIcon = "github" | "docs" | "demo" | "paper" | "video";
+
+export type InfoLink = {
+	label: string;
+	url: string;
+	icon?: LinkIcon;
+};
+
+export type CodeSrc = {
+	title: string;
+	filename: string;
+	url: string;
+	src: string;
+}
+
+export type Tab = {
+	id: string;
+	label: string;
+	body?: string;          // Supports markdown — rendered via react-markdown
+	youtubeId?: string;     // YouTube video ID (the part after ?v=)
+	photoSrc?: string;
+	codeSrc?: CodeSrc;
+	links?: InfoLink[];  // Only used on the Links tab
+};
+
+export type Info = {
+	title: string;
+	subtitle?: string;      // One-line tagline shown under the title
+	photo: string;          // Path under /public, e.g. "/projects/vision.jpg"
+	tags?: string[];        // Skill tags shown as small chips e.g. ["Python", "OpenCV"]
+	tabs: Tab[];
+};
+
+
+
+
+const code1: string = `timer: {
+	kind: 'timer', category: 'source', label: 'Timer',
+	inputValues: { interval: '500', enabled: 'true' },
+	config: {},
+	inputs: [
+		{ name: 'interval', label: 'interval (ms)', dataType: 'int', isArray: false, defaultValue: '500' },
+		{ name: 'enabled', label: 'enabled', dataType: 'bool', isArray: false, defaultValue: 'true' },
+	],
+	outputs: [
+		{ name: 'tick', label: 'tick', dataType: 'pulse', isArray: false },
+		{ name: 'count', label: 'count', dataType: 'int', isArray: false },
+	],
+}`
+
+const code2: string = `addNode(partial: Omit<NodeDef, 'id'>): NodeDef {
+	const node: NodeDef = { ...partial, id: uid() };
+	const { _applyAddNode, _applyRemoveNode } = useGraphStore.getState();
+
+	_applyAddNode(node);												// <- edit is applied optimisitically
+	send({ type: 'ADD_NODE', node }, () => _applyRemoveNode(node.id));  // <- command is sent to backend with corresponding rollback
+
+	return node;
+}
+
+...
+
+function send(op: GraphOp, rollbackFn: () => void): string {
+	const txId = _syncLayer.sendOp(op);    	// <- backend sync layer returns the transaction id
+	pendingOps.register(txId, rollbackFn);	// <- rollback function is cached with transaction id to rollback if necessary
+	return txId;
+}`
+
+
+// ─── Project Data ─────────────────────────────────────────────────────────────
+
+export const infoSrc: Info = {
+	title: "Graphical Dataflow Node-based Editor",
+	subtitle: "A more intuitive way to route data",
+	photo: "/images/info/Nodeeditor.png",
+	tags: ["Python", "C", "OpenCV", "Raspberry Pi", "DMX512", "Computer Vision", "Real-Time", "Embedded Systems", "Hardware Design"],
+	tabs: [
+		{
+			id: "overview",
+			label: "Overview",
+			body: `When I went to work at Casne Engineering Inc., I was put on a new project called CloudStream, an SaaS platform that made a big promise: “providing flexible, reliable, and secure industrial data pipelines wherever you need them.” The project meant to make all disparate data sources and endpoints connectable so that clients wouldn’t have to navigate the messy transfer process on their own.
+
+My job was to create the UI, a platform which Casne Employees would use internally to manage these connection points. I started with something serviceable (though clunky). But after getting the basic system working, and inspired by graphical node editors like those found in Blender or even MatLab, I began an independent project to create a functional, visually intuitive design to level up the platform. The duration of the summer meant it wasn’t feasible to implement this system, but it remains one of the most robust software projects I’ve worked on and I believe it will find a home somewhere.
+
+This proof of concept has a stubbed backend (read more in future tabs) but the frontend system is functional enough (I hope) to demonstrate the intention. Feel free to play around!`,
+		},
+		{
+			id: "frontend",
+			label: "Frontend Functionality",
+			body: `The concept is simple: data flows from source to endpoint, so let’s show that happening. Using graphical source and endpoint nodes, it is visually clear how the data moves. A source is polled, it passes to the end point, it’s posted, and done. So I stopped there.
+
+No I didn’t! I figured as long as I have a visual transfer of data, why not do something more than source to endpoint? I implemented a rudimentary typing system, an assortment of sources and endpoints, and then some control and transformation nodes. Being able to parse objects, filter, merge, run custom functions, and anything else a data scientist might want leveled up the functionality of the system 10-fold. As the front end doesn’t actually need to do the transforming and everything is established through configuration files, adding new behaviors is extremely simple.`,
+			codeSrc: { title: "Example Node Definition", filename: "constants/index.ts", url: "https://github.com/klaytonme/nodeeditor.git", src: code1 },
+		},
+		{
+			id: "backend",
+			label: "Backend Connectivity",
+			body: `But this is just a tantalizing nothing burger if it can’t actually do anything with data. I wanted to build the system to be backend agnostic, and ensure the user experience was responsive while respecting the backend as the single source of truth. To satisfy these requirements, this platform implements an optimistic dispatch system:
+
+- A user makes an edit like adding a new node or connecting two existing nodes
+- That edit is implemented immediately in the front end so the user sees the change
+- The edit is sent by the system dispatcher to the backend
+- If the backend responds with an acknowledgement, great
+- If it does not respond, or sends an error, the edit was cached with a corresponding rollback function: the edit is undone and the user is notified something has gone wrong
+
+An example of this dispatch system can be seen here. For full code, see the GitHub in the links tab
+
+This demo is currently stubbed with a simulated backend which responds with acknowledgement after 100ms of latency (this can be seen in the log window).`,
+			codeSrc: { title: "Dispatch Snapshot", filename: "sync/dispatch.ts", url: "https://github.com/klaytonme/nodeeditor.git", src: code2 },
+		},
+		{
+			id: "future",
+			label: "Future Work",
+			body: `While a functional proof of concept, this demo is lacking  many features that would take it to production. My todo list of upgrades consists of (among others)
+
+- Implementing keyboard shortcuts, scroll, select, and other ease of use features
+- A more robust typing system with connection validation
+- A graphical debugging system
+- A system listener providing a view of real-time data as it moves through the nodes
+- More node varieties, in particular flow and control blocks
+
+Should this project ever find a new home, I will be eager to jump back into the development process.`,
+		},
+		{
+			id: "parse",
+			label: "Highlight: Parse Object",
+			body: `The parse object node in particular demonstrates the flexibility of this system. The block takes an object in and parses it, separating out the keys of the input into distinct outputs. The block has a listen feature which can observe incoming data and populate the output keys to match. Alternatively, users can manually add expected keys and create corresponding outputs blindly.
+
+This is a good demonstration of disparate functionality enabled through a cohesive user-experience. Despite having unique functionality, the implementation of this block is visually similar to maintain the intuitive design flow. I hope it is clear how easy this makes it to add, change, or upgrade node behavior.`,
+			photoSrc: "/images/info/parseObj.png"
+		},
+		{
+			id: "links",
+			label: "Links",
+			body: "",
+			links: [
+				{ label: "Thesis PDF", url: "https://scholarcommons.scu.edu/elec_senior/100/", icon: "paper" },
+				{ label: "Source Code", url: "https://github.com/klaytonme/Auto-Followspot.git", icon: "github" },
+				{ label: "Demo Video", url: "https://youtu.be/Fg9T1ztIY08", icon: "video" },
+			]
+		}
+	]
+};

@@ -1,57 +1,118 @@
-/* Global reset & design tokens */
-
 @import "tailwindcss";
 
 :root {
-  --bg:           #0e0f11;
-  --surface:      #16181c;
-  --surface2:     #1e2026;
-  --border:       rgba(255, 255, 255, 0.07);
-  --border2:      rgba(255, 255, 255, 0.14);
-  --text:         #e8e9eb;
-  --text-muted:   #6b7280;
-  --text-dim:     #9ca3af;
+	--bg: #0e0f11;
+	--surface: #16181c;
+	--surface2: #1e2026;
+	--border: rgba(255, 255, 255, 0.07);
+	--border2: rgba(255, 255, 255, 0.14);
+	--text: #e8e9eb;
+	--text-muted: #6b7280;
+	--text-dim: #9ca3af;
 
-  --accent:       #3b82f6;
-  --accent-dim:   rgba(59, 130, 246, 0.15);
-  --accent-glow:  rgba(59, 130, 246, 0.3);
+	--accent: #3b82f6;
+	--accent-dim: rgba(59, 130, 246, 0.15);
+	--accent-glow: rgba(59, 130, 246, 0.3);
 
-  --green:        #22c55e;
-  --green-dim:    rgba(34, 197, 94, 0.15);
-  --amber:        #f59e0b;
-  --amber-dim:    rgba(245, 158, 11, 0.12);
-  --red:          #ef4444;
-  --red-dim:      rgba(239, 68, 68, 0.12);
-  --purple:       #a78bfa;
-  --purple-dim:   rgba(167, 139, 250, 0.12);
+	--green: #22c55e;
+	--green-dim: rgba(34, 197, 94, 0.15);
+	--amber: #f59e0b;
+	--amber-dim: rgba(245, 158, 11, 0.12);
+	--red: #ef4444;
+	--red-dim: rgba(239, 68, 68, 0.12);
+	--purple: #a78bfa;
+	--purple-dim: rgba(167, 139, 250, 0.12);
+
+	--color-background: #080f0b;
+	--color-surface: #0e1912;
+	--color-surface-raised: #1a2a1c;
+
+	--color-foreground: #ddeee4;
+	--color-foreground-muted: rgba(180, 220, 195, 0.8);
+	--color-foreground-subtle: rgba(180, 220, 195, 0.32);
+
+	--color-primary: #7dc367;
+	--color-primary-foreground: #080f0b;
+
+	--color-secondary: #29b32e;
+	--color-secondary-foreground: #080f0b;
+
+	--color-border: rgba(111, 207, 151, 0.09);
+	--color-ring: rgba(111, 207, 151, 0.45);
+
+	--color-destructive: #e07070;
+	--color-destructive-foreground: #080f0b;
+
+	--color-indicator-d-red: #6b0000;
+	--color-indicator-d-yellow: #7c7200;
+	--color-indicator-d-green: #017316;
+	--color-indicator-s-red: #b50505;
+	--color-indicator-s-yellow: #d29d0b;
+	--color-indicator-s-green: #1ab505;
 }
 
-html, body, #root {
-  height: 100%;
-  overflow: hidden;
+@theme inline {
+	--color-background: var(--color-background);
+	--color-surface: var(--color-surface);
+	--color-surface-raised: var(--color-surface-raised);
+	--color-foreground: var(--color-foreground);
+	--color-foreground-muted: var(--color-foreground-muted);
+	--color-foreground-subtle: var(--color-foreground-subtle);
+	--color-primary: var(--color-primary);
+	--color-primary-foreground: var(--color-primary-foreground);
+	--color-secondary: var(--color-secondary);
+	--color-secondary-foreground: var(--color-secondary-foreground);
+	--color-border: var(--color-border);
+	--color-ring: var(--color-ring);
+	--color-destructive: var(--color-destructive);
+	--color-destructive-foreground: var(--color-destructive-foreground);
+	--color-indicator-d-red: var(--color-indicator-d-red);
+	--color-indicator-d-yellow: var(--color-indicator-d-yellow);
+	--color-indicator-d-green: var(--color-indicator-d-green);
+	--color-indicator-s-red: var(--color-indicator-s-red);
+	--color-indicator-s-yellow: var(--color-indicator-s-yellow);
+	--color-indicator-s-green: var(--color-indicator-s-green);
 }
 
+html,
+body,
+#root {
+	height: 100%;
+	overflow: hidden;
+}
 
 body {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-  background: var(--bg);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
+	font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+	background: var(--bg);
+	color: var(--text);
+	-webkit-font-smoothing: antialiased;
 }
 
 /* Thin monochrome scrollbar */
-::-webkit-scrollbar        { width: 4px; height: 4px; }
-::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.1); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+::-webkit-scrollbar {
+	width: 4px;
+	height: 4px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.2);
+}
 
 /* Utility: hide but accessible */
 .sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
 }

@@ -93,7 +93,7 @@ const Dropdown: React.FC<DropdownProps> = ({ label, color, items, onSelect }) =>
 
 // ── Toolbar ───────────────────────────────────────────────────────────────────
 
-export const Toolbar: React.FC = () => {
+export const Toolbar: React.FC<{ showInfo: () => void }> = ({ showInfo }) => {
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("disconnected");
 	const isRunning = useUIStore((s) => s.isRunning);
 
@@ -124,10 +124,14 @@ export const Toolbar: React.FC = () => {
 		<div
 			className="flex items-center gap-2 px-4 h-12 border-b border-white/5 shrink-0 z-50"
 			style={{ background: "var(--surface)" }}>
-			{/* Logo */}
-			<span className="text-[13px] font-bold tracking-widest text-white mr-2">
-				FLOW<span className="text-blue-400">GRAPH</span>
-			</span>
+			{/* Info Dot */}
+			<div
+				className="flex h-[65%] aspect-square rounded-full border bg-transparent border-white/10 text-white/50 hover:bg-white/5 hover:text-white/80 hover:border-white/15 justify-center items-center cursor-pointer"
+				onClick={() => {
+					showInfo();
+				}}>
+				i
+			</div>
 
 			<div className="w-px h-5 bg-white/10 mx-1" />
 
