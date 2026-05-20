@@ -20,7 +20,7 @@ import { InfoPanel } from "./info/InfoPanel";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function EditorClient() {
-	const [infoShown, setInfoVisibility] = useState(false);
+	const [infoShown, setInfoVisibility] = useState(true);
 
 	useEffect(() => {
 		seedGraph();

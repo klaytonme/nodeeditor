@@ -44,6 +44,7 @@ export type Info = {
 };
 
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 
 const code1: string = `timer: {
@@ -84,7 +85,7 @@ function send(op: GraphOp, rollbackFn: () => void): string {
 export const infoSrc: Info = {
 	title: "Graphical Dataflow Node-based Editor",
 	subtitle: "A more intuitive way to route data",
-	photo: "/images/info/Nodeeditor.png",
+	photo: basePath + "/images/info/Nodeeditor.png",
 	tags: ["TypeScript", "React", "SaaS", "Data Pipelines", "Industrial IoT", "UI/UX Design", "Optimistic Dispatching", "Front/Backend Sync"],
 	tabs: [
 		{
@@ -139,7 +140,7 @@ Should this project ever find a new home, I will be eager to jump back into the 
 			body: `The parse object node in particular demonstrates the flexibility of this system. The block takes an object in and parses it, separating out the keys of the input into distinct outputs. The block has a listen feature which can observe incoming data and populate the output keys to match. Alternatively, users can manually add expected keys and create corresponding outputs blindly.
 
 This is a good demonstration of disparate functionality enabled through a cohesive user-experience. Despite having unique functionality, the implementation of this block is visually similar to maintain the intuitive design flow. I hope it is clear how easy this makes it to add, change, or upgrade node behavior.`,
-			photoSrc: "/images/info/parseObj.png"
+			photoSrc: basePath + "/images/info/parseObj.png"
 		},
 		{
 			id: "links",
