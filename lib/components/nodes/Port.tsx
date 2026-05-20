@@ -23,19 +23,15 @@ interface PortProps {
 	isOverridden?: boolean;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Port — a typed connection point rendered inline within a node row.
-//
-// Visual encoding (matching Cloudstream original):
-//   Colour  → data type  (str=teal, int=orange, float=red, date=lavender, obj=blue…)
-//   Shape   → scalar vs array:
-//               circle         = scalar
-//               rotated square = array
-//               square (no rotate, no radius) = encrypted
-//
-// Inputs:  port indicator on the LEFT edge of the row
-// Outputs: port indicator on the RIGHT edge of the row
-// ─────────────────────────────────────────────────────────────────────────────
+/*----------------------------------- Port.tsx -----------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/components/nodes/Port.tsx                                          |
+| Descr:  This is the row for inputs and outputs within the node. It includes      |
+|   label, value, and container for the port interface 'dot' which handles         |
+|   placement within the node and takes care of mouse events for connections.      |
+|   Instantiated by Node.tsx, instantiates PortInterface.tsx.                      |
+\*--------------------------------------------------------------------------------*/
 
 export const Port: React.FC<PortProps> = ({
 	nodeId,
@@ -50,12 +46,12 @@ export const Port: React.FC<PortProps> = ({
 	getPortPos,
 	updatePortPositions,
 	value,
-	isOverridden,
 }) => {
-	const portConnect = useUIStore((s) => s.portConnect);
-
+	// input vs output determines which side the port interface dot will appear on
 	const isInput = side === "input";
 
+	// mouse events for connection management
+	//	enabling both dragging to connect and clicking to connect
 	const handleMouseDown = useCallback(
 		(e: React.MouseEvent) => {
 			if (side !== "output") return;
@@ -74,6 +70,8 @@ export const Port: React.FC<PortProps> = ({
 			const { portConnect: portDrag, endPortConnect: endPortDrag } = useUIStore.getState();
 			if (!portDrag) return;
 			e.stopPropagation();
+
+			// Don't allow self-connections
 			if (portDrag.srcNodeId !== nodeId) {
 				dispatch.addEdge(portDrag.srcNodeId, portDrag.srcPort, nodeId, portName);
 			}
@@ -113,7 +111,7 @@ export const Port: React.FC<PortProps> = ({
 
 	return (
 		<div className="flex items-center justify-between flex-row gap-3 h-6 relative px-1">
-			{/* Port indicator — sits at the outer edge */}
+			{/* Port indicator sits at the outer edge, left for input, right for output */}
 			<div
 				ref={portRef}
 				data-port={portName}
@@ -121,8 +119,8 @@ export const Port: React.FC<PortProps> = ({
 				data-side={side}
 				className="inline-flex absolute justify-center align-middle"
 				style={{
-					right: isInput ? "" : -PORT_SIZE / 2 + "px",
-					left: isInput ? -PORT_SIZE / 2 + "px" : "",
+					right: isInput ? "" : -PORT_SIZE / 2 + "px", // some messy but functional positioning to
+					left: isInput ? -PORT_SIZE / 2 + "px" : "", //  get the half-dot overhang
 				}}
 				onMouseDown={handleMouseDown}
 				onMouseUp={handleMouseUp}
@@ -133,15 +131,14 @@ export const Port: React.FC<PortProps> = ({
 				onMouseLeave={(e) => {
 					(e.currentTarget as HTMLElement).style.boxShadow = "";
 				}}>
+				{/* The actual interface dot is outsources to a separate component so the style can be reused for the legend */}
 				<PortInterface label={label} dataType={dataType} isArray={isArray}></PortInterface>
 			</div>
 
 			{/* Label */}
 			<span
 				className="shrink-0 text-[11px] select-none overflow-hidden text-ellipsis whitespace-nowrap pl-2"
-				style={{
-					color: "rgba(255,255,255,0.75)",
-				}}>
+				style={{ color: "rgba(255,255,255,0.75)" }}>
 				{label}
 			</span>
 
@@ -152,14 +149,12 @@ export const Port: React.FC<PortProps> = ({
 					style={{
 						color: "rgba(255,255,255,0.5)",
 					}}>
-					external
+					external {/* value is overridden with "exteranal" if the input is connected to another node */}
 				</span>
 			) : (
 				<span
 					className="text-[11px] justify-end text-right select-none overflow-hidden text-ellipsis whitespace-nowrap pr-2"
-					style={{
-						color: "rgba(255,255,255,0.75)",
-					}}>
+					style={{ color: "rgba(255,255,255,0.75)" }}>
 					{value}
 				</span>
 			)}

@@ -18,6 +18,25 @@ interface NodeProps {
 	updatePortPositions: () => void;
 }
 
+/*----------------------------------- Node.tsx -----------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/components/nodes/Node.tsx                                          |
+| Descr:  The component for the actual node that appears on the Canvas. Instant-   |
+|   ated by Canvas.tsx, instantiates Port.tsx.                                     |
+\*--------------------------------------------------------------------------------*/
+
+//  +-----------------+
+//	| Label        n# |	 <- Colored by type
+//	+-----------------+
+//	|     Inputs      |
+//	o label		value |	 <- input values can be hardcoded, or overridden with an
+//	o label		value |		connection, in which case it reads /external/
+//  |     Outputs     |
+//	| label			  o
+//	| label			  o
+//	+-----------------+
+
 const DIVIDER: React.CSSProperties = {
 	height: 1,
 	background: "rgba(255,255,255,0.07)",
@@ -50,55 +69,28 @@ export const Node: React.FC<NodeProps> = ({
 		<div
 			data-nodeid={node.id}
 			onClick={handleClick}
+			className="absolute rounded-[10px] select-none overflow-visible"
 			style={{
-				position: "absolute",
 				left: position.x,
 				top: position.y,
 				width: NODE_WIDTH,
 				background: "rgb(49, 49, 49)",
 				border: `1px solid ${isSelected ? "#3b82f6" : "rgba(255,255,255,0.08)"}`,
-				borderRadius: 10,
 				boxShadow: isSelected
 					? "0 0 0 1px rgba(59,130,246,0.3), 0 4px 24px rgba(0,0,0,0.6)"
 					: "0 4px 8px rgba(0,0,0,0.3)",
 				transition: "border-color 0.15s, box-shadow 0.15s",
-				userSelect: "none",
-				overflow: "visible",
 				fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
 			}}>
 			{/* Title bar */}
 			<div
 				onMouseDown={onMouseDown}
-				style={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					padding: "0 10px",
-					height: 26,
-					background: headerColor,
-					borderRadius: "9px 9px 0 0",
-					cursor: "move",
-				}}>
-				<span
-					style={{
-						color: "white",
-						fontSize: 12,
-						fontWeight: 600,
-						userSelect: "none",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
-						whiteSpace: "nowrap",
-						flex: 1,
-					}}>
+				className="flex items-center justify-between py-0 px-2.5 h-7 rounded-t-[10px] cursor-move"
+				style={{ background: headerColor }}>
+				<span className="flex-1 text-white text-[12px] font-bold select-none overflow-hidden text-ellipsis whitespace-nowrap">
 					{node.label}
 				</span>
-				<span
-					style={{
-						fontSize: 9,
-						color: "rgba(255,255,255,0.5)",
-						marginLeft: 8,
-						flexShrink: 0,
-					}}>
+				<span className="text-[9px] ml-2 shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
 					{node.id}
 				</span>
 			</div>

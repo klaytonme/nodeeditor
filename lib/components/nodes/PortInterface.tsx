@@ -1,8 +1,6 @@
 import { DATA_TYPE_COLOR, PORT_SIZE } from "@/lib/constants";
-import { useUIStore } from "@/lib/stores/uiStore";
-import { dispatch } from "@/lib/sync/dispatch";
 import { DataType } from "@/lib/types";
-import React, { useCallback } from "react";
+import React from "react";
 
 interface PortInterfaceProps {
 	label: string;
@@ -10,23 +8,17 @@ interface PortInterfaceProps {
 	isArray: boolean;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Port — a typed connection point rendered inline within a node row.
-//
-// Visual encoding (matching Cloudstream original):
-//   Colour  → data type  (str=teal, int=orange, float=red, date=lavender, obj=blue…)
-//   Shape   → scalar vs array:
-//               circle         = scalar
-//               rotated square = array
-//               square (no rotate, no radius) = encrypted
-//
-// Inputs:  port indicator on the LEFT edge of the row
-// Outputs: port indicator on the RIGHT edge of the row
-// ─────────────────────────────────────────────────────────────────────────────
+/*------------------------------- PortInterface.tsx ------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/components/nodes/PortInterface.tsx                                 |
+| Descr:  Just the colorful dot! Maintains single source of truth on styling for   |
+|   these interfaces, allowing it's instantiation in multiple places (Node.tsx     |
+|   and TypeKey.tsx). Pulls color data from constants/index.ts.                    |
+\*--------------------------------------------------------------------------------*/
 
 export const PortInterface: React.FC<PortInterfaceProps> = ({ label, dataType, isArray }) => {
 	const color = DATA_TYPE_COLOR[dataType] ?? DATA_TYPE_COLOR.unknown;
-	const isAny = dataType === "any";
 
 	const isEncrypted = dataType === "encrypted";
 
