@@ -147,9 +147,9 @@ This is a good demonstration of disparate functionality enabled through a cohesi
 			label: "Links",
 			body: "",
 			links: [
-				{ label: "Thesis PDF", url: "https://scholarcommons.scu.edu/elec_senior/100/", icon: "paper" },
-				{ label: "Source Code", url: "https://github.com/klaytonme/Auto-Followspot.git", icon: "github" },
-				{ label: "Demo Video", url: "https://youtu.be/Fg9T1ztIY08", icon: "video" },
+				{ label: "Codebase", url: "https://github.com/klaytonme/nodeeditor.git", icon: "github" },
+				{ label: "Original Raw JS Version", url: "https://github.com/klaytonme/CloudStream4.0.git", icon: "github" },
+				{ label: "Casne's CloudStream", url: "https://casne.com/cloudstream", icon: "docs" },
 			]
 		}
 	]
