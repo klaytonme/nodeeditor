@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	basePath: '/nodeeditor',
 	webpack: (config) => {
 		config.module.rules.push({
 			test: /\.txt$|\.js\.raw$/,
