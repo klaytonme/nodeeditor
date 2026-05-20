@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+	assetPrefix: '/nodeeditor',
 	webpack: (config) => {
 		config.module.rules.push({
 			test: /\.txt$|\.js\.raw$/,
