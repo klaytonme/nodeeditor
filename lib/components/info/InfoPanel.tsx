@@ -1,21 +1,22 @@
 "use client";
 
-// ─── components/ProjectCard.tsx ───────────────────────────────────────────────
-//
-//  Renders a single full-width project card with:
-//    - Project photo (left, hidden on mobile)
-//    - Tab navigation
-//    - Body text (centre)
-//    - Embedded YouTube video (right, when youtubeId is set)
-//    - Links layout (when tab.links is set)
+/*-------------------------------------- InfoPanel.tsx -------------------------------------*\
+| Author: Clayton Wiley                                                                      |
+| Copy:   Copyright © 2026                                                                   |
+| Path:   ./lib/components/info/InfoPanel.tsx                                                |
+| Descr: Stealing both the structure and content of this info panel from my website (if it   |
+|   ain't broke :), this is the panel component including the separate tabs which pull       |
+|   their data from 'info.ts.' There's some pretty meaty React in here including markdown    |
+|   body text, animated tabs, shiki-generated code blocks, in-line images, and even the      |
+|   option to embed videos if I ever manage to sit down long enough to record a worthy       |
+|   talking head about this project.                                                         |
+\*------------------------------------------------------------------------------------------*/
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { codeToHtml } from "shiki";
 import { type Info, type Tab, type LinkIcon, infoSrc, CodeSrc } from "./info";
-
-// ─── Icon map for link types ──────────────────────────────────────────────────
 
 const LINK_ICONS: Record<LinkIcon, string> = {
 	github: "↗ GitHub",
@@ -25,7 +26,7 @@ const LINK_ICONS: Record<LinkIcon, string> = {
 	video: "↗ Video",
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// Navigator
 
 function TabNav({ tabs, activeId, onSelect }: { tabs: Tab[]; activeId: string; onSelect: (id: string) => void }) {
 	return (
@@ -57,6 +58,7 @@ function TabNav({ tabs, activeId, onSelect }: { tabs: Tab[]; activeId: string; o
 	);
 }
 
+// Embedded YouTube clip
 function YouTubeEmbed({ videoId }: { videoId: string }) {
 	return (
 		<div
@@ -73,6 +75,7 @@ function YouTubeEmbed({ videoId }: { videoId: string }) {
 	);
 }
 
+// List of links at the end
 function LinksPanel({ links }: { links: NonNullable<Tab["links"]> }) {
 	return (
 		<div
@@ -99,6 +102,7 @@ function LinksPanel({ links }: { links: NonNullable<Tab["links"]> }) {
 	);
 }
 
+// Tags under the header (yk, buzz words)
 function SkillTags({ tags }: { tags: string[] }) {
 	return (
 		<div className="flex flex-wrap gap-2 mt-3">
@@ -113,6 +117,7 @@ function SkillTags({ tags }: { tags: string[] }) {
 	);
 }
 
+// Shiki-styled block of code with descriptive header
 function CodeBlock({ code }: { code: CodeSrc }) {
 	const [html, setHtml] = useState("");
 
@@ -123,8 +128,10 @@ function CodeBlock({ code }: { code: CodeSrc }) {
 	return (
 		<>
 			<div className="flex flex-row w-full h-8 mt-5 px-5 rounded-t-xl bg-cyan-950 items-center">
-				<div className="shrink-0 text-sm font-bold leading-tight text-foreground">{code.title}</div>
-				<div className="shrink-0 text-xs leading-tight text-foreground-muted ml-4">{code.filename}</div>
+				<div className="shrink-0 text-sm font-bold leading-tight text-foreground">{code.title}</div>{" "}
+				{/* Title of clip */}
+				<div className="shrink-0 text-xs leading-tight text-foreground-muted ml-4">{code.filename}</div>{" "}
+				{/* file of origin */}
 				<div className="flex w-full"></div>
 				<a
 					key={code.url + "-" + code.title}
@@ -132,6 +139,8 @@ function CodeBlock({ code }: { code: CodeSrc }) {
 					target="_blank"
 					rel="noopener noreferrer"
 					className="group flex shrink-0 items-center justify-between rounded-lg transition-all duration-200">
+					{" "}
+					{/* Link to Github */}
 					<span className="text-xs mr-1 font-medium text-foreground-muted group-hover:text-foreground transition-colors">
 						Codebase
 					</span>
@@ -139,7 +148,8 @@ function CodeBlock({ code }: { code: CodeSrc }) {
 						↗
 					</span>
 				</a>
-			</div>
+			</div>{" "}
+			{/* Actual code */}
 			<div
 				className="text-[14px] [&>pre]:p-5 [&>pre]:overflow-x-scroll rounded-b-2xl overflow-hidden"
 				dangerouslySetInnerHTML={{ __html: html }}></div>
@@ -147,8 +157,7 @@ function CodeBlock({ code }: { code: CodeSrc }) {
 	);
 }
 
-// ─── Tab content panel ────────────────────────────────────────────────────────
-
+// Manager of the body sections
 function TabContent({ tab }: { tab: Tab }) {
 	const isLinksTab = tab.links && tab.links.length > 0;
 	const hasMedia = !!tab.youtubeId || !!tab.photoSrc;
@@ -202,8 +211,7 @@ function TabContent({ tab }: { tab: Tab }) {
 	);
 }
 
-// ─── Main ProjectCard ─────────────────────────────────────────────────────────
-
+// Main Card
 export const InfoPanel: React.FC<{ hideInfo: () => void }> = ({ hideInfo }) => {
 	const info: Info = infoSrc;
 	const [activeTabId, setActiveTabId] = useState(info.tabs[0].id);
@@ -220,14 +228,14 @@ export const InfoPanel: React.FC<{ hideInfo: () => void }> = ({ hideInfo }) => {
 				<span>&times;</span>
 			</div>
 
-			{/* ── Photo ── */}
+			{/* Photo */}
 			<div className="hidden lg:block shrink-0 relative border-r border-border aspect-3/4 min-w-[18vw]">
 				<img
 					src={info.photo}
 					alt={info.title}
 					className="absolute inset-0 w-full h-full object-cover object-center"
 				/>
-				{/* Subtle gradient over photo bottom */}
+				{/* Subtle gradient bcos we're classy */}
 				<div
 					className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
 					style={{
@@ -238,9 +246,9 @@ export const InfoPanel: React.FC<{ hideInfo: () => void }> = ({ hideInfo }) => {
 				/>
 			</div>
 
-			{/* ── Right side: title + nav + content ── */}
+			{/* Body */}
 			<div className="flex flex-col flex-1 my-6 min-w-0">
-				{/* Card header */}
+				{/* Header */}
 				<div className="px-6 border-border">
 					<h2
 						className="text-base font-bold text-foreground tracking-tight leading-tight"

@@ -1,13 +1,13 @@
 import { EDGE_BEZIER_OFFSET, EDGE_BEZIER_TENSION } from '@/lib/constants';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Edge path helpers — all geometry for drawing edges lives here.
-// ─────────────────────────────────────────────────────────────────────────────
+/*---------------------------------- edgePath.ts ---------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/components/edges/edgePath.ts                                       |
+| Descr: Just some good old fashioned bezier helpers!                              |
+\*--------------------------------------------------------------------------------*/
 
-/**
- * Returns an SVG cubic bezier path string between two points.
- * Control points are horizontal, giving the classic node-editor S-curve.
- */
+// SVG cubic bezier from two points - uses constants to define shape
 export function bezierPath(
 	x1: number,
 	y1: number,
@@ -18,10 +18,9 @@ export function bezierPath(
 	return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 }
 
-/**
- * Returns the midpoint along the bezier — useful for placing edge labels.
- * Uses De Casteljau's algorithm at t=0.5.
- */
+// This is currently unused, but I found it while researching how to use beziers and it is
+//	able to return the midpoint of a bezier using De Casteljau's algo which could be useful
+//	for labeling and stuff like that
 export function bezierMidpoint(
 	x1: number,
 	y1: number,

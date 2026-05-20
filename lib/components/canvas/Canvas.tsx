@@ -8,14 +8,14 @@ import { Node } from "@/lib/components/nodes/Node";
 import { EdgeLayer } from "@/lib/components/edges/EdgeLayer";
 import { dispatch } from "@/lib/sync/dispatch";
 
-/*+----------------------------- Canvas.tsx -----------------------------
-  | Author: Clayton Wiley
-  | Copy:   Copyright © 2026
-  | Path:   ./lib/components/canvas/
-  | Descr:  The canvas is responsible for rendering all Node components
-  |    (DOM, absolutely positioned), rendering EdgeLayer (SVG, sits
-  |    behind nodes), and forwarding mouse events to uiStore.
-/*+--------------------------------------------------------------------*/
+/*----------------------------- Canvas.tsx -----------------------------*\
+| Author: Clayton Wiley                                                  |
+| Copy:   Copyright © 2026                                               |
+| Path:   ./lib/components/canvas/Canvas.tsx                             |
+| Descr:  The canvas is responsible for rendering all Node components    |
+|   (DOM, absolutely positioned), rendering EdgeLayer (SVG, sits         |
+|   behind nodes), and forwarding mouse events to uiStore.               |
+\*----------------------------------------------------------------------*/
 
 export const Canvas: React.FC = () => {
 	const wrapRef = useRef<HTMLDivElement>(null);

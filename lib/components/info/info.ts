@@ -1,10 +1,14 @@
-// ─── data/projects.ts ──────────────────────────────────────────────────────────
-//
-//  This is the single source of truth for all project content.
-//
-//  Tab order determines nav order. The Links tab should always be last.
-//  youtubeId is optional
+/*------------------------------------ info.ts -----------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/components/info/info.ts                                            |
+| Descr: Stealing both the structure and content of this info panel from my        |
+|   website (if it ain't broke :), this is the single source of truth for          |
+|   everything in the info popup. It also defines some types and code snippits.    |
+\*--------------------------------------------------------------------------------*/
 
+
+// All the card types
 export type LinkIcon = "github" | "docs" | "demo" | "paper" | "video";
 
 export type InfoLink = {
@@ -13,28 +17,29 @@ export type InfoLink = {
 	icon?: LinkIcon;
 };
 
+// Added this which allows for code blocks inline using shiki formatting
 export type CodeSrc = {
 	title: string;
 	filename: string;
 	url: string;
-	src: string;
+	src: string; // just code as a multiline string
 }
 
 export type Tab = {
 	id: string;
 	label: string;
-	body?: string;          // Supports markdown — rendered via react-markdown
-	youtubeId?: string;     // YouTube video ID (the part after ?v=)
+	body?: string;
+	youtubeId?: string;
 	photoSrc?: string;
 	codeSrc?: CodeSrc;
-	links?: InfoLink[];  // Only used on the Links tab
+	links?: InfoLink[];
 };
 
 export type Info = {
 	title: string;
-	subtitle?: string;      // One-line tagline shown under the title
-	photo: string;          // Path under /public, e.g. "/projects/vision.jpg"
-	tags?: string[];        // Skill tags shown as small chips e.g. ["Python", "OpenCV"]
+	subtitle?: string;
+	photo: string;
+	tags?: string[];
 	tabs: Tab[];
 };
 
@@ -74,13 +79,13 @@ function send(op: GraphOp, rollbackFn: () => void): string {
 }`
 
 
-// ─── Project Data ─────────────────────────────────────────────────────────────
+// ─── Info ─────────────────────────────────────────────────────────────
 
 export const infoSrc: Info = {
 	title: "Graphical Dataflow Node-based Editor",
 	subtitle: "A more intuitive way to route data",
 	photo: "/images/info/Nodeeditor.png",
-	tags: ["Python", "C", "OpenCV", "Raspberry Pi", "DMX512", "Computer Vision", "Real-Time", "Embedded Systems", "Hardware Design"],
+	tags: ["TypeScript", "React", "SaaS", "Data Pipelines", "Industrial IoT", "UI/UX Design", "Optimistic Dispatching", "Front/Backend Sync"],
 	tabs: [
 		{
 			id: "overview",
@@ -100,8 +105,8 @@ No I didn’t! I figured as long as I have a visual transfer of data, why not do
 			codeSrc: { title: "Example Node Definition", filename: "constants/index.ts", url: "https://github.com/klaytonme/nodeeditor.git", src: code1 },
 		},
 		{
-			id: "backend",
-			label: "Backend Connectivity",
+			id: "sync",
+			label: "Sync Layer",
 			body: `But this is just a tantalizing nothing burger if it can’t actually do anything with data. I wanted to build the system to be backend agnostic, and ensure the user experience was responsive while respecting the backend as the single source of truth. To satisfy these requirements, this platform implements an optimistic dispatch system:
 
 - A user makes an edit like adding a new node or connecting two existing nodes

@@ -9,19 +9,24 @@ import { DATA_TYPES, type DataType, type NodeDef, type PortDef } from "@/lib/typ
 import { TypeKey } from "./TypeKey";
 import { PortInterface } from "../nodes/PortInterface";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Inspector — typed input controls per port dataType.
-// If a port is connected via an edge, its hardcoded value is shown as overridden.
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ── Typed input controls ────────────────────────────────────────────────────
-
 interface PortInputProps {
 	port: PortDef;
 	value: string;
 	isOverridden: boolean;
 	onChange: (value: string) => void;
 }
+
+/*-------------------------------------- Inspector.tsx -------------------------------------*\
+| Author: Clayton Wiley                                                                      |
+| Copy:   Copyright © 2026                                                                   |
+| Path:   ./lib/components/inspector/Inspector.tsx                                           |
+| Descr:  Similar to the info panel, there is a lot that goes into this inspector panel. In  |
+|   the future, I would like to break it out into more coherent components, maybe procedu-   |
+|   ally assemble it for each type of node in particular. For now this will do. Biggest      |
+|   grievance is it can't currently be resized. Soooo easy to add but just can't be          |
+|   bothered. Also, I tried to comment as I coded but I really can't be going back through   |
+|   this thing. Sry.                                                                         |
+\*------------------------------------------------------------------------------------------*/
 
 const PortInput: React.FC<PortInputProps> = ({ port, value, isOverridden, onChange }) => {
 	const baseInput =
@@ -264,7 +269,8 @@ const ParseObjFieldEditor: React.FC<ParseObjFieldEditorProps> = ({ nodeId, outpu
 // ── Section label ────────────────────────────────────────────────────────────
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-	<div className="text-[9px] tracking-widest uppercase text-white/30 mb-2 mt-4 first:mt-0">{children}</div>
+	// <div className="text-[9px] tracking-widest uppercase text-white/30 mb-2 mt-4 first:mt-0">{children}</div>
+	<div className="text-[11px] tracking-wider uppercase mb-2">{children}</div>
 );
 
 // ── Main Inspector ───────────────────────────────────────────────────────────
@@ -338,6 +344,7 @@ export const Inspector: React.FC = () => {
 				{/* Input port values */}
 				{node.inputs.length > 0 && (
 					<>
+						<div className="h-3"></div>
 						<SectionLabel>Inputs</SectionLabel>
 						<div className="flex flex-col gap-3 mb-2">
 							{node.inputs.map((port) => {
@@ -354,16 +361,16 @@ export const Inspector: React.FC = () => {
 												className="w-1.5 h-1.5 rounded-full shrink-0"
 												style={{ background: typeColor }}
 											/>
-											<span className="text-[10px] text-white/60 flex-1">{port.label}</span>
+											<span className="text-[12px] text-white/60 flex-1">{port.label}</span>
+											{isOverridden && (
+												<span className="text-[8px] text-white/25 ml-1 italic">overridden</span>
+											)}
 											<span
-												className="text-[9px] font-bold tracking-wide"
+												className="text-[11px] font-bold tracking-wide"
 												style={{ color: typeColor }}>
 												{port.dataType}
 												{port.isArray ? "[]" : ""}
 											</span>
-											{isOverridden && (
-												<span className="text-[8px] text-white/25 ml-1 italic">overridden</span>
-											)}
 										</div>
 										<PortInput
 											port={port}
@@ -378,6 +385,7 @@ export const Inspector: React.FC = () => {
 					</>
 				)}
 
+				<div className="h-3"></div>
 				{/* Output port info (read-only) */}
 				<SectionLabel>Outputs</SectionLabel>
 				{node.kind === "parse_obj" ? (
@@ -473,9 +481,7 @@ export const Inspector: React.FC = () => {
 		<div
 			className="w-75 shrink-0 flex flex-col text-xs border-l border-white/5"
 			style={{ background: "var(--surface)" }}>
-			<div className="px-3 py-2.5 text-[9px] tracking-widest uppercase text-white/25 border-b border-white/5">
-				Inspector
-			</div>
+			<div className="px-3 py-2.5 text-[12px] tracking-widest uppercase border-b border-white/5">Inspector</div>
 			<div className="p-3 flex-1 overflow-y-auto">
 				{!selected && renderEmpty()}
 				{selected?.kind === "node" && renderNodeInspector(selected.id)}
