@@ -91,32 +91,31 @@ export const infoSrc: Info = {
 		{
 			id: "overview",
 			label: "Overview",
-			body: `When I went to work at Casne Engineering Inc., I was put on a new project called CloudStream, an SaaS platform that made a big promise: “providing flexible, reliable, and secure industrial data pipelines wherever you need them.” The project meant to make all disparate data sources and endpoints connectable so that clients wouldn’t have to navigate the messy transfer process on their own.
+			body: `When I started at Casne Engineering Inc. in my Sophomore year of college, I was put to work on CloudStream, a new SaaS platform that is in production now, “providing flexible, reliable, and secure industrial data pipelines wherever you need them.” The project meant to make all disparate data sources and endpoints connectable so that clients wouldn’t have to navigate the messy transfer process on their own.
 
-My job was to create the UI, a platform which Casne Employees would use internally to manage these connection points. I started with something serviceable (though clunky). But after getting the basic system working, and inspired by graphical node editors like those found in Blender or even MatLab, I began an independent project to create a functional, visually intuitive design to level up the platform. The duration of the summer meant it wasn’t feasible to implement this system, but it remains one of the most robust software projects I’ve worked on and I believe it will find a home somewhere.
+My job was to create the UI, a platform which Casne Employees would use internally to manage these connection points. I started with something serviceable (though clunky). But after getting the basic system working, and inspired by graphical node editors like those found in Blender or MatLab’s Simulink, I began an independent project to create a functional, visually intuitive design to level up the platform. The duration of the summer meant it wasn’t feasible to implement this system, but it remains one of the most robust software projects I’ve worked on and I believe it will find a home somewhere.
 
-This proof of concept has a stubbed backend (read more in future tabs) but the frontend system is functional enough (I hope) to demonstrate the intention. Feel free to play around!`,
+Though just a proof of concept with a stubbed backend (read more in future tabs), I hope this demo shows a functional enough (I hope) frontend system to demonstrate the intention. Feel free to play around!`,
 		},
 		{
 			id: "frontend",
 			label: "Frontend Functionality",
-			body: `The concept is simple: data flows from source to endpoint, so let’s show that happening. Using graphical source and endpoint nodes, it is visually clear how the data moves. A source is polled, it passes to the end point, it’s posted, and done. So I stopped there.
+			body: `The concept is simple: data flows from source to endpoint, so let’s show that happening. Using graphical source and endpoint nodes, the data’s movement is visually intuitive. A source is polled, it passes to the end point, it’s posted, and done. So I stopped there.
 
-No I didn’t! I figured as long as I have a visual transfer of data, why not do something more than source to endpoint? I implemented a rudimentary typing system, an assortment of sources and endpoints, and then some control and transformation nodes. Being able to parse objects, filter, merge, run custom functions, and anything else a data scientist might want leveled up the functionality of the system 10-fold. As the front end doesn’t actually need to do the transforming and everything is established through configuration files, adding new behaviors is extremely simple.`,
+No I didn’t! I figured as long as I have a visual transfer of data, why not do something more than source to endpoint? I implemented a rudimentary typing system, an assortment of sources and endpoints, and then some control and transformation nodes. Being able to parse objects, filter, merge, run custom functions, and a dozen other new additions leveled up the functionality of the system 10-fold. As the front end doesn’t actually need to move/transform the data and everything is established through configuration files, adding new behaviors is extremely simple.`,
 			codeSrc: { title: "Example Node Definition", filename: "constants/index.ts", url: "https://github.com/klaytonme/nodeeditor.git", src: code1 },
 		},
 		{
 			id: "sync",
 			label: "Sync Layer",
-			body: `But this is just a tantalizing nothing burger if it can’t actually do anything with data. I wanted to build the system to be backend agnostic, and ensure the user experience was responsive while respecting the backend as the single source of truth. To satisfy these requirements, this platform implements an optimistic dispatch system:
-
+			body: `But as mentioned, this design doesn’t actually touch data. This is just a tantalizing nothing burger if it can’t actually talk to the backend. I built the system to be backend agnostic, and ensured the user experience was responsive while respecting the backend as the single source of truth on dataflow. To satisfy these requirements, this platform implements an optimistic dispatch system:
 - A user makes an edit like adding a new node or connecting two existing nodes
 - That edit is implemented immediately in the front end so the user sees the change
-- The edit is sent by the system dispatcher to the backend
+- The edit is sent by the system dispatcher to the backend and then cached with a corresponding rollback function
 - If the backend responds with an acknowledgement, great
-- If it does not respond, or sends an error, the edit was cached with a corresponding rollback function: the edit is undone and the user is notified something has gone wrong
+- If it times out, or sends an error, the rollback function is called: the edit is undone and the user is notified something has gone wrong
 
-An example of this dispatch system can be seen here. For full code, see the GitHub in the links tab
+A snippet of this dispatch system can be seen below. For full code, see the GitHub in the links tab
 
 This demo is currently stubbed with a simulated backend which responds with acknowledgement after 100ms of latency (this can be seen in the log window).`,
 			codeSrc: { title: "Dispatch Snapshot", filename: "sync/dispatch.ts", url: "https://github.com/klaytonme/nodeeditor.git", src: code2 },
@@ -125,7 +124,6 @@ This demo is currently stubbed with a simulated backend which responds with ackn
 			id: "future",
 			label: "Future Work",
 			body: `While a functional proof of concept, this demo is lacking  many features that would take it to production. My todo list of upgrades consists of (among others)
-
 - Implementing keyboard shortcuts, scroll, select, and other ease of use features
 - A more robust typing system with connection validation
 - A graphical debugging system
@@ -139,7 +137,7 @@ Should this project ever find a new home, I will be eager to jump back into the 
 			label: "Highlight: Parse Object",
 			body: `The parse object node in particular demonstrates the flexibility of this system. The block takes an object in and parses it, separating out the keys of the input into distinct outputs. The block has a listen feature which can observe incoming data and populate the output keys to match. Alternatively, users can manually add expected keys and create corresponding outputs blindly.
 
-This is a good demonstration of disparate functionality enabled through a cohesive user-experience. Despite having unique functionality, the implementation of this block is visually similar to maintain the intuitive design flow. I hope it is clear how easy this makes it to add, change, or upgrade node behavior.`,
+This is a good demonstration of disparate functionality enabled through a cohesive user-experience. Despite having unique functionality, the implementation of this block is visually similar to maintain the intuitive design flow. I hope it is clear how easy it is to add, change, or upgrade node behavior.`,
 			photoSrc: basePath + "/images/info/parseObj.png"
 		},
 		{
