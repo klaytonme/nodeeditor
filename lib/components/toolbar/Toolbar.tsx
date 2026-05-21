@@ -7,10 +7,19 @@ import { syncLayerStub } from "@/lib/sync/syncLayerStub";
 import { NODE_LIBRARY, TOOLBAR_MENUS, CATEGORY_COLOR } from "@/lib/constants";
 import type { NodeKind, NodeCategory, SyncStatus } from "@/lib/types";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Toolbar — three category dropdowns + run/clear + sync status
-// ─────────────────────────────────────────────────────────────────────────────
+/*---------------------------------- Toolbar.tsx ---------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/components/toolbar/Toolbar.tsx                                     |
+| Descr:  This contains all the code used for the toolbar at the top of the page.  |
+|   That includes enumerated dropdowns for adding nodes, the code to actually add  |
+|   those nodes, a backend sync indicator, a run/pause control, and an info        |
+|   button to open the popup panel. The mouse events for the info button are       |
+|   passed from the parent EditorClient.tsx so it can reveal the info panel.       |
+\*--------------------------------------------------------------------------------*/
 
+// Code for generating a random position for a new node and dispatching the edit
+//	including writing to the dispatcher and updating the UI store
 function spawnNode(kind: NodeKind, categoryOverride?: NodeCategory) {
 	const wrap = document.getElementById("canvas-wrap");
 	const rect = wrap?.getBoundingClientRect() ?? { width: 800, height: 600 };
@@ -24,8 +33,7 @@ function spawnNode(kind: NodeKind, categoryOverride?: NodeCategory) {
 	useUIStore.getState().setPosition(node.id, { x, y });
 }
 
-// ── Dropdown menu ─────────────────────────────────────────────────────────────
-
+/*----------------------------------- Dropdown -----------------------------------*/
 interface DropdownProps {
 	label: string;
 	color: string;
@@ -34,6 +42,8 @@ interface DropdownProps {
 }
 
 const Dropdown: React.FC<DropdownProps> = ({ label, color, items, onSelect }) => {
+	// This react component is instantiated 3 times, once per dropdown menu
+
 	const [open, setOpen] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
 
@@ -91,7 +101,7 @@ const Dropdown: React.FC<DropdownProps> = ({ label, color, items, onSelect }) =>
 	);
 };
 
-// ── Toolbar ───────────────────────────────────────────────────────────────────
+/*------------------------------------ Toolbar -----------------------------------*/
 
 export const Toolbar: React.FC<{ showInfo: () => void }> = ({ showInfo }) => {
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("disconnected");
