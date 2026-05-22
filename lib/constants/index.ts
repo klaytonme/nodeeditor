@@ -2,15 +2,23 @@
 
 import type { NodeDef, NodeKind, NodeCategory, DataType } from '@/lib/types';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Node library — one template per NodeKind
-// ─────────────────────────────────────────────────────────────────────────────
+/*----------------------------------- index.ts -----------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/constants/index.ts                                                 |
+| Descr:  All constant definitions used in the project, including the node         |
+|   library (a record of all render-related fields corresponding to each node      |
+|   type), some color values, datatype information, and other render-specific      |
+|   constants like bezier parameters. At some point, I want to tidy the style      |
+|   side of this project and turn all the style values into css variables at       |
+|   which point they will be moved out of here.                                    |
+\*--------------------------------------------------------------------------------*/
 
 type NodeTemplate = Omit<NodeDef, 'id'>;
-
+/*--------------------------------- Node Library ---------------------------------*/
 export const NODE_LIBRARY: Record<NodeKind, NodeTemplate> = {
 
-	// ── SOURCES ────────────────────────────────────────────────────────────────
+	/*-------------------------------- Sources -----------------------------------*/
 
 	constant: {
 		kind: 'constant', category: 'source', label: 'Constant',
@@ -92,7 +100,7 @@ export const NODE_LIBRARY: Record<NodeKind, NodeTemplate> = {
 		],
 	},
 
-	// ── TRANSFORMS ─────────────────────────────────────────────────────────────
+	/*------------------------------ Transforms ----------------------------------*/
 
 	parse_obj: {
 		kind: 'parse_obj', category: 'transform', label: 'Parse Object',
@@ -235,9 +243,10 @@ export const NODE_LIBRARY: Record<NodeKind, NodeTemplate> = {
 		],
 	},
 
-	// ── SINKS ──────────────────────────────────────────────────────────────────
+	/*--------------------------------- Sinks ------------------------------------*/
 
-	// http is shared — appears in sources and sinks. Same template, category set at spawn time.
+	// http is displayed as both a source and a sink. It's only defined once here and it's
+	// 	category set at spawn time.
 
 	log: {
 		kind: 'log', category: 'sink', label: 'Log',
@@ -303,14 +312,28 @@ export const NODE_LIBRARY: Record<NodeKind, NodeTemplate> = {
 	},
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Toolbar menu structure
-// ─────────────────────────────────────────────────────────────────────────────
+
+/*-------------------------------- Category Styles -------------------------------*/
+
+export const CATEGORY_COLOR: Record<NodeCategory, string> = {
+	source: '#22c55e',
+	transform: '#3b82f6',
+	sink: '#ef4444',
+};
+
+export const CATEGORY_HEADER_COLOR: Record<NodeCategory, string> = {
+	source: 'rgb(15, 100, 60)',
+	transform: 'rgb(30, 64, 140)',
+	sink: 'rgb(120, 30, 30)',
+};
+
+
+/*------------------------------ Toolbar Menu Types ------------------------------*/
 
 export interface ToolbarMenuItem {
 	kind: NodeKind;
 	label: string;
-	/** Override category — used for http which appears in both sources and sinks */
+	// Override is used for nodes which appear in multiple categories (only http currently)
 	categoryOverride?: NodeCategory;
 }
 
@@ -365,21 +388,7 @@ export const TOOLBAR_MENUS: ToolbarMenu[] = [
 	},
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Visual tokens
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const CATEGORY_COLOR: Record<NodeCategory, string> = {
-	source: '#22c55e',
-	transform: '#3b82f6',
-	sink: '#ef4444',
-};
-
-export const CATEGORY_HEADER_COLOR: Record<NodeCategory, string> = {
-	source: 'rgb(15, 100, 60)',
-	transform: 'rgb(30, 64, 140)',
-	sink: 'rgb(120, 30, 30)',
-};
+/*------------------------------ Datatype Formatting -----------------------------*/
 
 export const DATA_TYPE_META: Record<DataType, { label: string; color: string }> = {
 	any: { label: 'Any', color: '#9ca3af' },
@@ -397,6 +406,9 @@ export const DATA_TYPE_META: Record<DataType, { label: string; color: string }> 
 export const DATA_TYPE_COLOR = Object.fromEntries(
 	Object.entries(DATA_TYPE_META).map(([k, v]) => [k, v.color])
 ) as Record<DataType, string>;
+
+
+/*---------------------------- Various Other Constants ---------------------------*/
 
 export const NODE_WIDTH = 220;
 export const PORT_SIZE = 10;

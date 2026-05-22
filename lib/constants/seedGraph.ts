@@ -4,7 +4,18 @@ import { dispatch } from '@/lib/sync/dispatch';
 import { useUIStore } from '@/lib/stores/uiStore';
 import { NODE_LIBRARY } from '@/lib/constants';
 
+/*--------------------------------- seedGraphs.ts --------------------------------*\
+| Author: Clayton Wiley                                                            |
+| Copy:   Copyright © 2026                                                         |
+| Path:   ./lib/constants/seedGraphs.ts                                            |
+| Descr:  This file uses the proper disbatch commands to populate the graph with   |
+|   the default nodes and edges. This simulates a user constructing the default    |
+|   graph tree and would be replaced with a call to hydrate graph when loading in  |
+|   from an actual backend.                                                        |
+\*--------------------------------------------------------------------------------*/
+
 export function seedGraph() {
+	// Add all nodes
 	const n1 = dispatch.addNode({ ...NODE_LIBRARY.timer, label: 'Pulse' });
 	const n2 = dispatch.addNode({ ...NODE_LIBRARY.http, label: 'Test Data Source', category: 'source' });
 	const n3 = dispatch.addNode({ ...NODE_LIBRARY.constant, label: "Constant" });
@@ -13,7 +24,7 @@ export function seedGraph() {
 	const n6 = dispatch.addNode({ ...NODE_LIBRARY.filter, label: "Filter" });
 	const n7 = dispatch.addNode({ ...NODE_LIBRARY.http, label: "Test Data Endpoint", category: 'sink' })
 
-
+	// Update input values and output keys for parse object
 	dispatch.updateInputValue(n1.id, "interval", "500");
 
 	dispatch.updateInputValue(n2.id, "url", "test.data.net/poll")
@@ -60,7 +71,7 @@ export function seedGraph() {
 
 
 
-
+	// Set all positions
 	const { setPosition } = useUIStore.getState();
 	setPosition(n1.id, { x: 40, y: 300 });
 	setPosition(n2.id, { x: 310, y: 40 });
@@ -70,6 +81,7 @@ export function seedGraph() {
 	setPosition(n6.id, { x: 1120, y: 250 });
 	setPosition(n7.id, { x: 580, y: 450 });
 
+	// Construct edges
 	setTimeout(() => {
 		dispatch.addEdge(n1.id, 'tick', n2.id, 'trigger');
 		dispatch.addEdge(n1.id, 'tick', n7.id, 'trigger');
