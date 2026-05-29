@@ -17,7 +17,7 @@ import type { NodeDef, EdgeDef, GraphOp, SyncLayer, PortDef } from '@/lib/types'
 //
 // To switch from stub → real backend:
 //   Call dispatch.setSyncLayer(useGraphSync('graph-001'))
-//   from your App component after the hook is set up.
+//   from App component after the hook is set up.
 // ─────────────────────────────────────────────────────────────────────────────
 
 let _syncLayer: SyncLayer = syncLayerStub;
